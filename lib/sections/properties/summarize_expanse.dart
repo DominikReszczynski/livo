@@ -1,10 +1,10 @@
 import 'package:cas_house/main_global.dart';
-import 'package:cas_house/sections/expenses/expanses_global.dart';
+import 'package:cas_house/sections/properties/expanses_global.dart';
 import 'package:flutter/material.dart';
-import 'package:cas_house/providers/expanses_provider.dart';
+import 'package:cas_house/providers/properties_provider.dart';
 
 class SummarizeExpensesPopup extends StatefulWidget {
-  final ExpansesProvider expansesProvider;
+  final PropertiesProvider expansesProvider;
   final String date;
   const SummarizeExpensesPopup({
     super.key,

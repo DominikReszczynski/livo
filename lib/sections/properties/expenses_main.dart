@@ -1,14 +1,14 @@
 import 'package:cas_house/main_global.dart';
-import 'package:cas_house/sections/expenses/expanse_tile.dart';
-import 'package:cas_house/sections/expenses/history_of_expanses_popup.dart';
+import 'package:cas_house/sections/properties/expanse_tile.dart';
+import 'package:cas_house/sections/properties/history_of_expanses_popup.dart';
 
-import 'package:cas_house/sections/expenses/summarize_expanse.dart';
+import 'package:cas_house/sections/properties/summarize_expanse.dart';
 import 'package:cas_house/widgets/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cas_house/models/expanses.dart';
-import 'package:cas_house/providers/expanses_provider.dart';
-import 'package:cas_house/sections/expenses/add_new_expanses_popup.dart';
+import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/sections/properties/add_new_expanses_popup.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ExpensesSectionMain extends StatefulWidget {
@@ -22,7 +22,7 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
   bool isLoading = false;
   int? currentMonth;
   int? currentYear;
-  late ExpansesProvider provider;
+  late PropertiesProvider provider;
   void fun() async {
     await provider.fetchExpensesForCurrentMonth();
     setState(() {});
@@ -37,7 +37,7 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
     setState(() {
       isLoading = true;
     });
-    provider = Provider.of<ExpansesProvider>(context, listen: false);
+    provider = Provider.of<PropertiesProvider>(context, listen: false);
     fun();
     DateTime now = DateTime.now();
 
@@ -53,7 +53,7 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
   @override
   Widget build(BuildContext context) {
     final expansesProvider =
-        Provider.of<ExpansesProvider>(context, listen: false);
+        Provider.of<PropertiesProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(

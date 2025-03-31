@@ -21,6 +21,8 @@ dependencies:
   equatable: ^2.0.0
   build_runner: ^2.4.5
   text_scroll: ^0.2.0
+  image_picker: ^1.0.4
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:

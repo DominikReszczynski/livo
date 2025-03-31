@@ -1,7 +1,7 @@
 import 'package:cas_house/models/product_model.dart';
-import 'package:cas_house/sections/shoppingList/components/category_and_priority_input.dart';
-import 'package:cas_house/sections/shoppingList/components/price_and_currency_input.dart';
-import 'package:cas_house/sections/shoppingList/components/quantity_and_unit_input.dart';
+import 'package:cas_house/sections/defects/components/category_and_priority_input.dart';
+import 'package:cas_house/sections/defects/components/price_and_currency_input.dart';
+import 'package:cas_house/sections/defects/components/quantity_and_unit_input.dart';
 import 'package:flutter/material.dart';
 
 class AddProductPopUp extends StatefulWidget {

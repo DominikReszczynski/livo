@@ -1,12 +1,14 @@
 import 'package:cas_house/main_global.dart';
 import 'package:cas_house/providers/dasboard_provider.dart';
-import 'package:cas_house/providers/expanses_provider.dart';
-import 'package:cas_house/providers/shopping_list_provider.dart';
+import 'package:cas_house/providers/payment_provider.dart';
+import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/user_provider.dart';
-import 'package:cas_house/sections/expenses/expenses_main.dart';
+import 'package:cas_house/sections/payment/payment_main.dart';
+import 'package:cas_house/sections/properties/expenses_main.dart';
 import 'package:cas_house/sections/dashboard/dashboard_main.dart';
 import 'package:cas_house/sections/login.dart';
-import 'package:cas_house/sections/shoppingList/shopping_list_main.dart';
+import 'package:cas_house/sections/defects/shopping_list_main.dart';
 import 'package:cas_house/sections/user/user_main.dart';
 import 'package:provider/provider.dart';
 import 'package:cas_house/nav_bar/nav_bar_main.dart';
@@ -19,9 +21,10 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => ExpansesProvider()),
+        ChangeNotifierProvider(create: (_) => PropertiesProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => ShoppingListProvider()),
+        ChangeNotifierProvider(create: (_) => DefectsProvider()),
+        ChangeNotifierProvider(create: (_) => PaymentProvider()),
       ],
       child: const MyApp(),
     ),
@@ -61,28 +64,6 @@ class HelloButton extends StatefulWidget {
 }
 
 class _HelloButtonState extends State<HelloButton> {
-  String message = "Press the button to fetch data";
-
-  Future<void> fetchMessage() async {
-    try {
-      final response = await http.get(Uri.parse('$apiUrl/api/hello'));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          message = data['message'];
-        });
-      } else {
-        setState(() {
-          message = 'Error: ${response.statusCode}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        message = 'Error: $e';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,12 +84,14 @@ class _HelloButtonState extends State<HelloButton> {
     switch (currentSite.value) {
       case MainViews.dashboard:
         return const HomeSectionMain();
-      case MainViews.expenses:
+      case MainViews.properties:
         return const ExpensesSectionMain();
-      case MainViews.shoppingList:
+      case MainViews.defects:
         return const ShoppingMain();
       case MainViews.user:
         return const UserSectionMain();
+      case MainViews.payment:
+        return const PaymentMain();
       default:
         return const Center(
             child: Text('Unknown section', style: TextStyle(fontSize: 24)));

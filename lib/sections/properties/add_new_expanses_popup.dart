@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:cas_house/models/expanses.dart';
-import 'package:cas_house/providers/expanses_provider.dart';
+import 'package:cas_house/providers/properties_provider.dart';
 
 enum ExpenseCategory {
   food,
@@ -23,7 +23,7 @@ enum ExpenseCategory {
 
 class AddNewExpensesPopup extends StatefulWidget {
   const AddNewExpensesPopup(
-      {super.key, required ExpansesProvider expensesProvider});
+      {super.key, required PropertiesProvider expensesProvider});
 
   @override
   State<AddNewExpensesPopup> createState() => _AddNewExpensesPopupState();
@@ -64,7 +64,7 @@ class _AddNewExpensesPopupState extends State<AddNewExpensesPopup> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final provider = Provider.of<ExpansesProvider>(context, listen: false);
+      final provider = Provider.of<PropertiesProvider>(context, listen: false);
 
       // Utworzenie obiektu Expanses
       Expanses expanse = Expanses(

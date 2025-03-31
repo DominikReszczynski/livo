@@ -35,17 +35,24 @@ class _NavBarMainState extends State<NavBarMain> {
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            MdiIcons.cashMultiple,
+            MdiIcons.home,
             size: 35,
           ),
-          label: 'Expenses',
+          label: 'Properties',
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            MdiIcons.cartVariant,
+            MdiIcons.bug,
             size: 35,
           ),
-          label: 'Shoping list',
+          label: 'Defects',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(
+            MdiIcons.creditCard,
+            size: 35,
+          ),
+          label: 'Payment',
         ),
         BottomNavigationBarItem(
           icon: Icon(
@@ -69,12 +76,14 @@ class _NavBarMainState extends State<NavBarMain> {
     switch (view) {
       case MainViews.dashboard:
         return 0;
-      case MainViews.expenses:
+      case MainViews.properties:
         return 1;
-      case MainViews.shoppingList:
+      case MainViews.defects:
         return 2;
-      case MainViews.user:
+      case MainViews.payment:
         return 3;
+      case MainViews.user:
+        return 4;
     }
   }
 
@@ -84,10 +93,12 @@ class _NavBarMainState extends State<NavBarMain> {
       case 0:
         return MainViews.dashboard;
       case 1:
-        return MainViews.expenses;
+        return MainViews.properties;
       case 2:
-        return MainViews.shoppingList;
+        return MainViews.defects;
       case 3:
+        return MainViews.payment;
+      case 4:
         return MainViews.user;
       default:
         return MainViews.dashboard;

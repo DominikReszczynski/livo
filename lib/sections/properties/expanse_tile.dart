@@ -1,12 +1,12 @@
 import 'package:cas_house/models/expanses.dart';
-import 'package:cas_house/providers/expanses_provider.dart';
-import 'package:cas_house/sections/expenses/add_new_expanses_popup.dart';
-import 'package:cas_house/sections/expenses/expanses_global.dart';
+import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/sections/properties/add_new_expanses_popup.dart';
+import 'package:cas_house/sections/properties/expanses_global.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ExpenseTile extends StatefulWidget {
-  final ExpansesProvider provider;
+  final PropertiesProvider provider;
   final Expanses expanse;
   const ExpenseTile({super.key, required this.expanse, required this.provider});
 

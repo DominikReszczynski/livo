@@ -1,11 +1,11 @@
 import 'package:cas_house/models/expanses.dart';
-import 'package:cas_house/sections/expenses/expanse_tile.dart';
-import 'package:cas_house/sections/expenses/summarize_expanse.dart';
+import 'package:cas_house/sections/properties/expanse_tile.dart';
+import 'package:cas_house/sections/properties/summarize_expanse.dart';
 import 'package:flutter/material.dart';
-import 'package:cas_house/providers/expanses_provider.dart';
+import 'package:cas_house/providers/properties_provider.dart';
 
 class HistoryOfExpensesPopup extends StatefulWidget {
-  final ExpansesProvider expansesProvider;
+  final PropertiesProvider expansesProvider;
   const HistoryOfExpensesPopup({
     super.key,
     required this.expansesProvider,
@@ -68,7 +68,6 @@ class _HistoryOfExpensesPopupState extends State<HistoryOfExpensesPopup> {
                                     icon: const Icon(Icons.summarize),
                                     tooltip: 'Summarize',
                                     onPressed: () => Navigator.push(
-                                      
                                       context,
                                       MaterialPageRoute(
                                           builder: (_) => SummarizeExpensesPopup(

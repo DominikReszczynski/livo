@@ -14,7 +14,7 @@ ValueNotifier<MainViews> currentSite =
     ValueNotifier<MainViews>(MainViews.dashboard);
 
 // Enum to define the possible views in the application.
-enum MainViews { dashboard, expenses, shoppingList, user }
+enum MainViews { dashboard, properties, defects, payment, user }
 
 // Define commonly used colors in the app to maintain consistency across the UI.
 const Color mainDarkBlue = Color.fromARGB(255, 1, 102, 177);

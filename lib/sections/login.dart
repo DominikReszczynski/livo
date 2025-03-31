@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-
+    // TODO: Implement the login logic again
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final success = await userProvider.login(
       email: _emailController.text.trim(),
@@ -38,9 +38,13 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const HelloButton()),
       );
     } else {
-      setState(() {
-        _errorMessage = 'Nieprawidłowy e-mail lub hasło';
-      });
+      // setState(() {
+      //   _errorMessage = 'Nieprawidłowy e-mail lub hasło';
+      // });
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HelloButton()),
+      );
     }
   }
 

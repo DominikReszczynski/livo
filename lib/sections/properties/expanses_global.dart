@@ -1,5 +1,5 @@
 // Funkcja pomocnicza do pobrania ikony na podstawie kategorii
-import 'package:cas_house/sections/expenses/add_new_expanses_popup.dart';
+import 'package:cas_house/sections/properties/add_new_expanses_popup.dart';
 import 'package:flutter/material.dart';
 
 IconData getCategoryIcon(ExpenseCategory category) {

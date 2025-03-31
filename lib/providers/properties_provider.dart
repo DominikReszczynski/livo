@@ -2,7 +2,7 @@ import 'package:cas_house/models/expanses.dart';
 import 'package:cas_house/services/expanses_services.dart';
 import 'package:flutter/material.dart';
 
-class ExpansesProvider extends ChangeNotifier {
+class PropertiesProvider extends ChangeNotifier {
   List<Expanses> _expansesListThisMounth = [];
 
   List<Expanses> get expansesListThisMounth => _expansesListThisMounth;
