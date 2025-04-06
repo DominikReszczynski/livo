@@ -1,22 +1,21 @@
+import 'dart:io';
+
 import 'package:cas_house/models/expanses.dart';
-import 'package:cas_house/services/expanses_services.dart';
+import 'package:cas_house/models/properties.dart';
+import 'package:cas_house/services/property_services.dart';
 import 'package:flutter/material.dart';
 
 class PropertiesProvider extends ChangeNotifier {
-  List<Expanses> _expansesListThisMounth = [];
+  List<Property?> _propertiesList = [];
 
-  List<Expanses> get expansesListThisMounth => _expansesListThisMounth;
+  List<Property?> get propertiesList => _propertiesList;
 
-  List<dynamic> _expansesListHistory = [];
-
-  List<dynamic> get expansesListHistory => _expansesListHistory;
-
-  Future<void> fetchExpensesForCurrentMonth() async {
+  Future<void> getAllPropertiesByOwner() async {
     try {
-      final List<Expanses>? result =
-          await ExpansesServices().getExpansesByAuthorForCurrentMonth();
+      final List<Property?>? result =
+          await PropertyServices().getAllPropertiesByOwner();
       if (result != null) {
-        _expansesListThisMounth = result;
+        _propertiesList = result;
       }
     } catch (e) {
       print("Error fetching expenses: $e");
@@ -25,72 +24,20 @@ class PropertiesProvider extends ChangeNotifier {
     }
   }
 
-  Future fetchExpensesGroupedByCategory(String date, String userId) async {
+  Future<bool> addProperty(Property property, File? imageFile) async {
     try {
-      final Map<String, dynamic>? result =
-          await ExpansesServices().getExpensesGroupedByCategory(date, userId);
-      return result;
-    } catch (e) {
-      print("Error fetching expenses: $e");
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  Future<void> fetchExpansesByAuthorExcludingCurrentMonth() async {
-    try {
-      final List<dynamic>? result = await ExpansesServices()
-          .getAllExpansesByAuthorExcludingCurrentMonth();
-
+      final result = await PropertyServices().addProperty(property, imageFile);
       if (result != null) {
-        result.map((item) =>
-            item['expanses'].map((expanses) => Expanses.fromJson(expanses)));
-        _expansesListHistory = result;
+        print('-------------');
+        print(result);
+        _propertiesList.insert(0, result);
         notifyListeners();
-        print(expansesListHistory);
+        return true;
       }
     } catch (e) {
-      print("Error fetching expenses: $e");
+      print("Error adding property: $e");
+      return false;
     }
-  }
-
-  Future<void> fetchExpenses() async {
-    try {
-      final List<dynamic>? result =
-          await ExpansesServices().getAllExpansesByAuthor();
-      if (result != null) {
-        _expansesListHistory = result;
-      }
-    } catch (e) {
-      print("Error fetching expenses: $e");
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  Future<void> addExpense(Expanses newExpense) async {
-    try {
-      final result = await ExpansesServices().addExpanse(newExpense);
-      if (result != null) {
-        _expansesListThisMounth.insert(0, result);
-        notifyListeners();
-      }
-    } catch (e) {
-      print("Error adding expense: $e");
-    }
-  }
-
-  Future<void> removeExpense(String expanseId) async {
-    try {
-      final result = await ExpansesServices().removeExpanse(expanseId);
-      if (result == true) {
-        var index = expansesListThisMounth
-            .indexWhere((expanse) => expanseId == expanse.id);
-        _expansesListThisMounth.removeAt(index);
-        notifyListeners();
-      }
-    } catch (e) {
-      print("Error removed expense: $e");
-    }
+    return false;
   }
 }

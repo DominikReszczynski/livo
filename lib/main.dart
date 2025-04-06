@@ -5,7 +5,7 @@ import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/user_provider.dart';
 import 'package:cas_house/sections/payment/payment_main.dart';
-import 'package:cas_house/sections/properties/expenses_main.dart';
+import 'package:cas_house/sections/properties/properties_main.dart';
 import 'package:cas_house/sections/dashboard/dashboard_main.dart';
 import 'package:cas_house/sections/login.dart';
 import 'package:cas_house/sections/defects/shopping_list_main.dart';

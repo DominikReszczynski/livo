@@ -1,0 +1,98 @@
+import 'package:cas_house/sections/properties/property_tile.dart';
+
+import 'package:cas_house/widgets/loading.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/sections/properties/add_new_property_popup.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+
+class ExpensesSectionMain extends StatefulWidget {
+  const ExpensesSectionMain({super.key});
+
+  @override
+  State<ExpensesSectionMain> createState() => _ExpensesSectionMainState();
+}
+
+class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
+  bool isLoading = false;
+  int? currentMonth;
+  int? currentYear;
+  late PropertiesProvider provider;
+  void fun() async {
+    await provider.getAllPropertiesByOwner();
+    setState(() {});
+  }
+
+  // void getByGroup(String date, String userId) async {
+  //   await provider.fetchExpensesGroupedByCategory(date, userId);
+  // }
+
+  @override
+  void initState() {
+    setState(() {
+      isLoading = true;
+    });
+    provider = Provider.of<PropertiesProvider>(context, listen: false);
+    fun();
+    DateTime now = DateTime.now();
+
+    currentMonth = now.month;
+    currentYear = now.year;
+    setState(() {
+      isLoading = false;
+    });
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final propertiesProvider =
+        Provider.of<PropertiesProvider>(context, listen: true);
+
+    return Scaffold(
+      appBar: AppBar(
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(4),
+          child: Divider(),
+        ),
+        title: const Text('Properties'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(MdiIcons.plus),
+            tooltip: 'Add property',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AddNewPropertyPopup(
+                  propertiesProvider: propertiesProvider,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          isLoading
+              ? const Center(child: LoadingWidget())
+              : propertiesProvider.propertiesList.isEmpty
+                  ? const Center(child: Text('No expenses found.'))
+                  : Expanded(
+                      child: ListView.builder(
+                        itemCount: propertiesProvider.propertiesList.length,
+                        itemBuilder: (context, index) {
+                          final item = propertiesProvider.propertiesList[index];
+                          return PropertyTile(
+                            provider: propertiesProvider,
+                            property: item!,
+                          );
+                        },
+                      ),
+                    ),
+        ],
+      ),
+    );
+  }
+}

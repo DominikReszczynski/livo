@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cas_house/sections/dashboard/image_picker.dart';
 import 'package:cas_house/sections/dashboard/images_list.dart';
@@ -37,7 +39,9 @@ class _HomeSectionMainState extends State<HomeSectionMain> {
         const Divider(),
         const MultiImagePickerExample(),
         const Divider(),
-        const SingleImageUploader(),
+        SingleImageUploader(
+          onImageSelected: (File file) {},
+        ),
         RemoteImageList(
           filenames: [
             '42d068d4-6994-4bd1-881a-c18cdb7eb33e.jpg',
