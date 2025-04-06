@@ -21,11 +21,11 @@ class _PropertyTileState extends State<PropertyTile>
     const String urlPrefix = ApiService.baseUrl;
     return GestureDetector(
       onTap: () {
-        // Handle the tap event here
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PropertyDetails(property: widget.property),
+            builder: (context) => PropertyDetails(
+                property: widget.property, provider: widget.provider),
           ),
         );
       },

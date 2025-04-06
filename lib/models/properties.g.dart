@@ -30,6 +30,7 @@ Property _$PropertyFromJson(Map<String, dynamic> json) => Property(
       rentalContractFilename: json['rentalContractFilename'] as String?,
       notes: json['notes'] as String?,
       mainImage: json['mainImage'] as String?,
+      pin: json['pin'] as String?,
       createdAt: Property._fromJsonDate(json['createdAt']),
       updatedAt: Property._fromJsonDate(json['updatedAt']),
     );
@@ -54,6 +55,7 @@ Map<String, dynamic> _$PropertyToJson(Property instance) => <String, dynamic>{
       'rentalContractFilename': instance.rentalContractFilename,
       'notes': instance.notes,
       'mainImage': instance.mainImage,
+      'pin': instance.pin,
       'createdAt': Property._toJsonDate(instance.createdAt),
       'updatedAt': Property._toJsonDate(instance.updatedAt),
     };

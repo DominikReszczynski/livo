@@ -60,4 +60,91 @@ class PropertyServices {
     }
     return null;
   }
+
+  Future<List<Property?>?> getAllPropertiesByTenant() async {
+    Map<String, dynamic> body = {
+      'userID': loggedUser!.id,
+    };
+    final http.Response res = await http.post(
+      Uri.parse('$_urlPrefix/property/getAllByTenant'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(body),
+    );
+    print(res.body);
+    Map<String, dynamic> decodedBody = json.decode(res.body);
+    if (decodedBody['success']) {
+      List<Property> properties = [];
+      for (var property in decodedBody['properties']) {
+        properties.add(Property.fromJson(property));
+      }
+      return properties;
+    }
+    return null;
+  }
+
+  Future<bool> setPin(String propertyID, String pin) async {
+    print(loggedUser!.id);
+    Map<String, dynamic> body = {
+      'propertyID': propertyID,
+      'pin': pin,
+    };
+    final http.Response res = await http.post(
+      Uri.parse('$_urlPrefix/property/setPin'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(body),
+    );
+    print(res.body);
+    Map<String, dynamic> decodedBody = json.decode(res.body);
+    if (decodedBody['success']) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> removePin(String propertyID) async {
+    print(loggedUser!.id);
+    Map<String, dynamic> body = {
+      'propertyID': propertyID,
+    };
+    final http.Response res = await http.post(
+      Uri.parse('$_urlPrefix/property/removePin'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(body),
+    );
+    print(res.body);
+    Map<String, dynamic> decodedBody = json.decode(res.body);
+    if (decodedBody['success']) {
+      return true;
+    }
+    return false;
+  }
+
+  Future addTenantToProperty(
+      String propertyID, String pin, String tenantID) async {
+    Map<String, dynamic> body = {
+      'propertyID': propertyID,
+      'pin': pin,
+      'tenantID': tenantID,
+    };
+    final http.Response res = await http.post(
+      Uri.parse('$_urlPrefix/property/addTenantToProperty'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(body),
+    );
+    print(res.body);
+    Map<String, dynamic> decodedBody = json.decode(res.body);
+    if (decodedBody['success']) {
+      Property result = Property.fromJson(decodedBody['property']);
+      return result;
+    }
+    return null;
+  }
 }

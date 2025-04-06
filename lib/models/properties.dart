@@ -29,6 +29,7 @@ class Property {
   String? rentalContractFilename;
   String? notes;
   String? mainImage;
+  String? pin;
 
   @JsonKey(fromJson: _fromJsonDate, toJson: _toJsonDate)
   DateTime? createdAt;
@@ -56,6 +57,7 @@ class Property {
     this.rentalContractFilename,
     this.notes,
     this.mainImage,
+    this.pin,
     this.createdAt,
     this.updatedAt,
   });

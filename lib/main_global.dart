@@ -22,10 +22,9 @@ const Color mainGreen = Color.fromARGB(255, 9, 222, 174);
 const Color mainGrey = Color.fromARGB(255, 239, 239, 239);
 
 // Function to convert to the correct format for parsing to double regardless of the sign
-double parseDouble(String text) {
-  String normalizedText = text.replaceAll(',', '.');
-  double parsedValue = double.tryParse(normalizedText) ?? 0.0;
-  return double.parse(parsedValue.toStringAsFixed(2));
+String formatDate(String date) {
+  DateTime parsedDate = DateTime.parse(date);
+  return "${parsedDate.day}.${parsedDate.month}.${parsedDate.year}";
 }
 
 User? loggedUser;
