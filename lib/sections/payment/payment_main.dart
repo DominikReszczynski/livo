@@ -1,8 +1,4 @@
-import 'package:cas_house/models/product_model.dart';
 import 'package:cas_house/providers/payment_provider.dart';
-import 'package:cas_house/sections/defects/components/add_product_popup.dart';
-import 'package:cas_house/sections/defects/widgets/product_tile.dart';
-import 'package:cas_house/providers/defects_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -11,10 +7,10 @@ class PaymentMain extends StatefulWidget {
   const PaymentMain({super.key});
 
   @override
-  _PaymentMainState createState() => _PaymentMainState();
+  PaymentMainState createState() => PaymentMainState();
 }
 
-class _PaymentMainState extends State<PaymentMain> {
+class PaymentMainState extends State<PaymentMain> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +39,7 @@ class _PaymentMainState extends State<PaymentMain> {
           //     );
           //   },
           // );
-          return Text('placeholder');
+          return const Text('placeholder');
         },
       ),
     );

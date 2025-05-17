@@ -1,11 +1,11 @@
 import 'package:cas_house/sections/properties/add_new_property.dart';
 import 'package:cas_house/sections/properties/property_tile.dart';
-
+import 'package:cas_house/widgets/animated_background.dart';
 import 'package:cas_house/widgets/loading.dart';
+import 'package:cas_house/widgets/togglebutton_custom.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
-import 'package:cas_house/sections/properties/add_new_property_owner.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ExpensesSectionMain extends StatefulWidget {
@@ -15,36 +15,38 @@ class ExpensesSectionMain extends StatefulWidget {
   State<ExpensesSectionMain> createState() => _ExpensesSectionMainState();
 }
 
-class _ExpensesSectionMainState extends State<ExpensesSectionMain>
-    with SingleTickerProviderStateMixin {
+class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
   bool isLoading = false;
-  int? currentMonth;
-  int? currentYear;
+  bool showRentals = false;
   late PropertiesProvider provider;
-  late TabController _tabController;
-  void fun(int tabNumber) async {
-    tabNumber == 0
-        ? await provider.getAllPropertiesByOwner()
-        : await provider.getAllPropertiesByTenant();
-  }
 
   @override
   void initState() {
-    setState(() {
-      isLoading = true;
-    });
-    provider = Provider.of<PropertiesProvider>(context, listen: false);
-    fun(0);
-    DateTime now = DateTime.now();
-
-    currentMonth = now.month;
-    currentYear = now.year;
-    setState(() {
-      isLoading = false;
-    });
-
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    provider = Provider.of<PropertiesProvider>(context, listen: false);
+    _loadProperties();
+  }
+
+  Future<void> _loadProperties() async {
+    setState(() => isLoading = true);
+    await provider.getAllPropertiesByOwner();
+    setState(() => isLoading = false);
+  }
+
+  Future<void> _loadRentals() async {
+    setState(() => isLoading = true);
+    await provider.getAllPropertiesByTenant();
+    setState(() => isLoading = false);
+  }
+
+  void _onToggle(bool rentalsSelected) {
+    if (showRentals == rentalsSelected) return;
+    setState(() => showRentals = rentalsSelected);
+    if (rentalsSelected) {
+      _loadRentals();
+    } else {
+      _loadProperties();
+    }
   }
 
   @override
@@ -52,84 +54,66 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain>
     final propertiesProvider =
         Provider.of<PropertiesProvider>(context, listen: true);
 
-    return Scaffold(
-      appBar: AppBar(
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(4),
-          child: Divider(),
-        ),
-        title: const Text('Properties'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(MdiIcons.plus),
-            tooltip: 'Add property',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AddNewProperty(
-                  propertiesProvider: propertiesProvider,
-                ),
+    return AnimatedBackground(
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: PremisesRentalsToggle(
+                      isRentals: showRentals,
+                      onToggle: _onToggle,
+                      firstText: 'Your properties',
+                      secondText: 'Your rentals',
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(MdiIcons.plus),
+                    tooltip: 'Add property',
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            AddNewProperty(propertiesProvider: provider),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          TabBar(
-            controller: _tabController,
-            labelColor: Colors.black,
-            tabs: [
-              Tab(text: "My properties"),
-              Tab(text: "Rented properties"),
-            ],
-            onTap: (value) => fun(value),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                isLoading
-                    ? const Center(child: LoadingWidget())
-                    : propertiesProvider.propertiesListOwner.isEmpty
-                        ? const Center(child: Text('No properies found.'))
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount:
-                                  propertiesProvider.propertiesListOwner.length,
-                              itemBuilder: (context, index) {
-                                final item = propertiesProvider
-                                    .propertiesListOwner[index];
-                                return PropertyTile(
-                                  provider: propertiesProvider,
-                                  property: item!,
-                                );
-                              },
-                            ),
-                          ),
-                isLoading
-                    ? const Center(child: LoadingWidget())
-                    : propertiesProvider.propertiesListTenant.isEmpty
-                        ? const Center(child: Text('No properies found.'))
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount: propertiesProvider
-                                  .propertiesListTenant.length,
-                              itemBuilder: (context, index) {
-                                final item = propertiesProvider
-                                    .propertiesListTenant[index];
-                                return PropertyTile(
-                                  provider: propertiesProvider,
-                                  property: item!,
-                                );
-                              },
-                            ),
-                          ),
-              ],
+            const SizedBox(height: 16),
+            Expanded(
+              child: isLoading
+                  ? const Center(child: LoadingWidget())
+                  : _buildSeparatedList(showRentals, propertiesProvider),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildSeparatedList(
+      bool rentals, PropertiesProvider propertiesProvider) {
+    final list = rentals
+        ? propertiesProvider.propertiesListTenant
+        : propertiesProvider.propertiesListOwner;
+
+    if (list.isEmpty) {
+      return const Center(child: Text('No properties found.'));
+    }
+
+    return ListView.separated(
+      itemCount: list.length,
+      separatorBuilder: (_, __) => const SizedBox(),
+      itemBuilder: (context, index) {
+        final item = list[index]!;
+        return PropertyTile(provider: provider, property: item);
+      },
     );
   }
 }

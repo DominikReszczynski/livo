@@ -8,30 +8,27 @@ class MultiImagePickerExample extends StatefulWidget {
   const MultiImagePickerExample({super.key});
 
   @override
-  _MultiImagePickerExampleState createState() =>
-      _MultiImagePickerExampleState();
+  MultiImagePickerExampleState createState() => MultiImagePickerExampleState();
 }
 
-class _MultiImagePickerExampleState extends State<MultiImagePickerExample> {
+class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
   final ImagePicker _picker = ImagePicker();
   List<XFile> _images = [];
 
   Future<void> _pickImages() async {
-    final List<XFile>? selectedImages = await _picker.pickMultiImage();
+    final List<XFile> selectedImages = await _picker.pickMultiImage();
 
-    if (selectedImages != null) {
-      setState(() {
-        _images = selectedImages;
-      });
-    }
+    setState(() {
+      _images = selectedImages;
+    });
   }
 
   Future<void> _uploadImages() async {
     for (var image in _images) {
-      final String _urlPrefix = ApiService.baseUrl;
+      const String urlPrefix = ApiService.baseUrl;
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('$_urlPrefix/upload/images'),
+        Uri.parse('$urlPrefix/upload/images'),
       );
       request.files
           .add(await http.MultipartFile.fromPath('images', image.path));

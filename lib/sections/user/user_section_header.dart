@@ -56,20 +56,21 @@ class _UserSectionHeaderState extends State<UserSectionHeader> {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
                     color: Colors.grey),
-                child: const Center(
+                child: Center(
                     child: Text(
-                  "DR",
-                  style: TextStyle(
+                  loggedUser!.username[0].toUpperCase(),
+                  style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 60,
                       color: Colors.white),
                 )),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: AutoSizeText(
-                  "Dominik Reszczyński",
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 30),
+                  loggedUser!.username,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w900, fontSize: 30),
                 ),
               ),
             ],

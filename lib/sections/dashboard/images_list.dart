@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class RemoteImageList extends StatelessWidget {
   final List<String> filenames;
 
-  RemoteImageList({super.key, required this.filenames});
+  const RemoteImageList({super.key, required this.filenames});
   final String _urlPrefix = ApiService.baseUrl;
   @override
   Widget build(BuildContext context) {

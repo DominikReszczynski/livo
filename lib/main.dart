@@ -13,16 +13,19 @@ import 'package:cas_house/sections/user/user_main.dart';
 import 'package:provider/provider.dart';
 import 'package:cas_house/nav_bar/nav_bar_main.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
-void main() {
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance(); // Initialize prefs
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => PropertiesProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider(prefs)),
         ChangeNotifierProvider(create: (_) => DefectsProvider()),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
       ],
@@ -46,7 +49,7 @@ class MyApp extends StatelessWidget {
             themeMode: themeMode,
             home: Consumer<UserProvider>(
               builder: (context, userProvider, child) {
-                return userProvider.isLoggedIn
+                return userProvider.loggedIn
                     ? const HelloButton()
                     : const LoginScreen();
               },
@@ -60,10 +63,10 @@ class HelloButton extends StatefulWidget {
   const HelloButton({super.key});
 
   @override
-  _HelloButtonState createState() => _HelloButtonState();
+  HelloButtonState createState() => HelloButtonState();
 }
 
-class _HelloButtonState extends State<HelloButton> {
+class HelloButtonState extends State<HelloButton> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,9 +95,6 @@ class _HelloButtonState extends State<HelloButton> {
         return const UserSectionMain();
       case MainViews.payment:
         return const PaymentMain();
-      default:
-        return const Center(
-            child: Text('Unknown section', style: TextStyle(fontSize: 24)));
     }
   }
 }

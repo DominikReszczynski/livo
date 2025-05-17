@@ -26,14 +26,17 @@ dependencies:
   intl: ^0.18.1
   url_launcher: ^6.2.5
   pin_code_fields: ^8.0.1
+  shared_preferences: ^2.0.15
+  json_annotation: ^4.9.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.3.3
   json_serializable: ^6.8.0
   flutter_lints: ^4.0.0
   marquee: ^2.0.3
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/

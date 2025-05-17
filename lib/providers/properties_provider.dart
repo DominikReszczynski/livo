@@ -1,10 +1,8 @@
 import 'dart:io';
-
-import 'package:cas_house/main_global.dart';
-import 'package:cas_house/models/expanses.dart';
 import 'package:cas_house/models/properties.dart';
 import 'package:cas_house/services/property_services.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PropertiesProvider extends ChangeNotifier {
   List<Property?> _propertiesListOwner = [];
@@ -61,8 +59,10 @@ class PropertiesProvider extends ChangeNotifier {
 
   Future addTenantToProperty(String propertyID, String pin) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final storedUserId = prefs.getString('userId');
       final Property? result = await PropertyServices()
-          .addTenantToProperty(propertyID, pin, loggedUser!.id);
+          .addTenantToProperty(propertyID, pin, storedUserId!);
       if (result != null) {
         print('dupa');
         _propertiesListTenant.insert(0, result);

@@ -52,7 +52,7 @@ class _PropertyDetailsState extends State<PropertyDetails>
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Nie można otworzyć aplikacji map.")),
+        const SnackBar(content: Text("Nie można otworzyć aplikacji map.")),
       );
     }
   }
@@ -104,7 +104,7 @@ class _PropertyDetailsState extends State<PropertyDetails>
                                   return AlertDialog(
                                     title: Text(
                                         "Contact ${widget.property.ownerId != loggedUser!.id ? "Owner" : "Tenant"}"),
-                                    content: Column(
+                                    content: const Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
@@ -123,10 +123,9 @@ class _PropertyDetailsState extends State<PropertyDetails>
                                 },
                               );
                             },
-                            icon: CircleAvatar(
+                            icon: const CircleAvatar(
                                 backgroundColor: Colors.white,
-                                child: const Icon(Icons.person,
-                                    color: Colors.black)),
+                                child: Icon(Icons.person, color: Colors.black)),
                           )
                         : IconButton(
                             onPressed: () {
@@ -139,9 +138,9 @@ class _PropertyDetailsState extends State<PropertyDetails>
                                 ),
                               );
                             },
-                            icon: CircleAvatar(
+                            icon: const CircleAvatar(
                                 backgroundColor: Colors.white,
-                                child: const Icon(Icons.person_add,
+                                child: Icon(Icons.person_add,
                                     color: Colors.black)),
                           ),
                   ],
@@ -149,11 +148,11 @@ class _PropertyDetailsState extends State<PropertyDetails>
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TabBar(
             controller: _tabController,
             labelColor: Colors.black,
-            tabs: [
+            tabs: const [
               Tab(text: "Home"),
               Tab(text: "Nameless1"),
               Tab(text: "Nameless2"),
@@ -165,8 +164,8 @@ class _PropertyDetailsState extends State<PropertyDetails>
               controller: _tabController,
               children: [
                 _buildMenuTab(),
-                Center(child: Text("No promotions available")),
-                Center(child: Text("No reviews yet")),
+                const Center(child: Text("No promotions available")),
+                const Center(child: Text("No reviews yet")),
                 // if (widget.property.status == "wynajęte")
                 //   Center(child: Text("No reviews yet")),
               ],
@@ -185,10 +184,11 @@ class _PropertyDetailsState extends State<PropertyDetails>
         children: [
           Center(
             child: Text(widget.property.name,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ),
-          SizedBox(height: 12),
-          _buildDetailItem("Lokalizacja", "${widget.property.location}"),
+          const SizedBox(height: 12),
+          _buildDetailItem("Lokalizacja", widget.property.location),
           _buildDetailItem("Powierzchnia", "${widget.property.size} m²"),
           _buildDetailItem("Pokoje", "${widget.property.rooms}"),
           _buildDetailItem("Piętro", "${widget.property.floor}"),
@@ -206,12 +206,12 @@ class _PropertyDetailsState extends State<PropertyDetails>
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 12),
-                Text("Dodatkowe cechy:",
+                const SizedBox(height: 12),
+                const Text("Dodatkowe cechy:",
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 for (var feature in widget.property.features!)
-                  Text("$feature", style: TextStyle(color: Colors.black87)),
+                  Text(feature, style: const TextStyle(color: Colors.black87)),
               ],
             ),
           if (widget.property.notes != null)
@@ -230,8 +230,8 @@ class _PropertyDetailsState extends State<PropertyDetails>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$title:', style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: 2),
+          Text('$title:', style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 2),
           Row(
             children: [
               Padding(

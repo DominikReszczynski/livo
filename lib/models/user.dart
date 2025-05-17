@@ -33,14 +33,4 @@ class User {
       password: map['password'] ?? '',
     );
   }
-
-  /// Helper methods for parsing DateTime
-  static DateTime? _fromJsonDate(dynamic date) {
-    if (date == null) return null;
-    return DateTime.parse(date.toString());
-  }
-
-  static String? _toJsonDate(DateTime? date) {
-    return date?.toIso8601String();
-  }
 }

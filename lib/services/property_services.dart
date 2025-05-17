@@ -38,6 +38,9 @@ class PropertyServices {
   }
 
   Future<List<Property?>?> getAllPropertiesByOwner() async {
+    // final prefs = await SharedPreferences.getInstance();
+    // final storedUserId = prefs.getString('userId');
+
     print(loggedUser!.id);
     Map<String, dynamic> body = {
       'userID': loggedUser!.id,
@@ -62,6 +65,9 @@ class PropertyServices {
   }
 
   Future<List<Property?>?> getAllPropertiesByTenant() async {
+    // final prefs = await SharedPreferences.getInstance();
+    // final storedUserId = prefs.getString('userId');
+    // print(storedUserId);
     Map<String, dynamic> body = {
       'userID': loggedUser!.id,
     };

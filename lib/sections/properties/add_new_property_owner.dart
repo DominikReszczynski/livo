@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddNewPropertyOwner extends StatefulWidget {
   const AddNewPropertyOwner(
@@ -38,10 +39,12 @@ class _AddNewPropertyOwnerState extends State<AddNewPropertyOwner> {
 
   List<String> _features = [];
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final prefs = await SharedPreferences.getInstance();
+      final storedUserId = prefs.getString('userId');
       final property = Property(
-        ownerId: loggedUser!.id,
+        ownerId: storedUserId!,
         name: _nameController.text.trim(),
         location: _locationController.text.trim(),
         size: double.parse(_sizeController.text.trim()),
