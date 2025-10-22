@@ -1,5 +1,6 @@
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/sections/defects/components/defects_tile.dart';
 import 'package:cas_house/sections/properties/add_new_property.dart';
 import 'package:cas_house/sections/properties/property_tile.dart';
 import 'package:cas_house/widgets/animated_background.dart';
@@ -113,7 +114,7 @@ class _ShoppingMainState extends State<ShoppingMain> {
       separatorBuilder: (_, __) => const SizedBox(),
       itemBuilder: (context, index) {
         final item = list[index]!;
-        return PropertyTile(provider: provider, property: item);
+        return DefectsTile();
       },
     );
   }
