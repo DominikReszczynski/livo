@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cas_house/api_service.dart';
 import 'package:cas_house/main_global.dart';
 import 'package:cas_house/models/properties.dart';
+import 'package:cas_house/services/user_services.dart';
 import 'package:http/http.dart' as http;
 
 class PropertyServices {
@@ -12,6 +13,9 @@ class PropertyServices {
   Future<Property?> addProperty(Property property, File? imageFile) async {
     final uri = Uri.parse('$_urlPrefix/property/addProperty');
     final request = http.MultipartRequest('POST', uri);
+
+    final headers = await UserServices().getAuthHeaders();
+    request.headers.addAll(headers);
 
     // Dodaj dane JSON jako pole tekstowe
     request.fields['property'] = jsonEncode(property.toJson());

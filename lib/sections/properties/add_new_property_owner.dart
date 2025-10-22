@@ -42,7 +42,7 @@ class _AddNewPropertyOwnerState extends State<AddNewPropertyOwner> {
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final prefs = await SharedPreferences.getInstance();
-      final storedUserId = prefs.getString('userId');
+      final storedUserId = loggedUser!.id;
       final property = Property(
         ownerId: storedUserId!,
         name: _nameController.text.trim(),

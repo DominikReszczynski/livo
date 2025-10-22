@@ -9,13 +9,13 @@ class User {
   String id;
   String email;
   String username;
-  String password;
+  // String password;
 
   User({
     required this.id,
     required this.email,
     required this.username,
-    required this.password,
+    // required this.password,
   });
 
   /// Factory constructor for JSON serialization
@@ -30,7 +30,7 @@ class User {
       id: map['_id'],
       email: map['email'] ?? '',
       username: map['username'] ?? '',
-      password: map['password'] ?? '',
+      // password: map['password'] ?? '',
     );
   }
 }

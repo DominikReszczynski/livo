@@ -8,7 +8,7 @@ import 'package:cas_house/sections/payment/payment_main.dart';
 import 'package:cas_house/sections/properties/properties_main.dart';
 import 'package:cas_house/sections/dashboard/dashboard_main.dart';
 import 'package:cas_house/sections/login.dart';
-import 'package:cas_house/sections/defects/shopping_list_main.dart';
+import 'package:cas_house/sections/defects/defects_main.dart';
 import 'package:cas_house/sections/user/user_main.dart';
 import 'package:provider/provider.dart';
 import 'package:cas_house/nav_bar/nav_bar_main.dart';

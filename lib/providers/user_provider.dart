@@ -21,15 +21,18 @@ class UserProvider with ChangeNotifier {
   User? get user => _user;
 
   UserProvider(this._prefs) {
-    // _prefs.clear();
     _loggedIn = _prefs.getBool('loggedIn') ?? false;
+    _token = _prefs.getString('accessToken');
     final userData = _prefs.getString('userData');
+
+    print("AccessToken on startup: $_token");
+    print("UserData: $userData");
+
     if (userData != null) {
-      // 3) zdekoduj do Map i stwórz obiekt User
       final Map<String, dynamic> userMap = jsonDecode(userData);
       _user = User.fromJson(userMap);
     }
-    loggedUser = user;
+    loggedUser = _user;
   }
 
   // Future<void> _loadLoginState() async {
@@ -44,26 +47,36 @@ class UserProvider with ChangeNotifier {
       final userServices = UserServices();
       final result = await userServices.login(email, password);
       if (result['success'] == true) {
-        // _token = result['token'];
-        _loggedIn = true;
+        final accessToken = result['tokens']?['accessToken'];
+        final refreshToken = result['tokens']?['refreshToken'];
+
+        if (accessToken == null) {
+          debugPrint('Brak accessToken w odpowiedzi!');
+          return false;
+        }
+
+        // 💾 zapisz tokeny w SharedPreferences
         final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', accessToken);
+        if (refreshToken != null) {
+          await prefs.setString('refreshToken', refreshToken);
+        }
         await prefs.setBool('loggedIn', true);
-        print(2);
+
+        // 🧍 zapisz dane użytkownika
         await prefs.setString('userData', jsonEncode(result['user']));
-        print(3);
-        _user = User(
-            id: result['user']['_id'],
-            email: result['user']['email'],
-            username: result['user']['username'],
-            password: result['user']['password']);
-        print(4);
-        loggedUser = user;
+        await prefs.setString('userId', result['user']['_id']);
+
+        // 🔄 aktualizuj stan providera
+        _token = accessToken;
+        _loggedIn = true;
+        _user = User.fromJson(result['user']);
+        loggedUser = _user;
+
         notifyListeners();
-        loggedUser = User.fromMap(result['user']);
         return true;
       } else {
-        _token = '1234567890';
-        notifyListeners();
+        debugPrint('Błąd logowania: ${result['message']}');
         return false;
       }
     } catch (e) {

@@ -13,6 +13,7 @@ class UserSectionHeader extends StatefulWidget {
 class _UserSectionHeaderState extends State<UserSectionHeader> {
   @override
   Widget build(BuildContext context) {
+    print("loggedUser: $loggedUser");
     return Container(
       width: double.maxFinite,
       decoration: const BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:cas_house/providers/user_provider.dart';
 import 'package:cas_house/sections/login.dart';
 import 'package:cas_house/sections/user/user_section_header.dart';
+import 'package:cas_house/services/user_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,6 +31,7 @@ class _UserSectionMainState extends State<UserSectionMain> {
               ),
               onPressed: () {
                 userProvider.logout();
+                UserServices().logout();
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                   (route) => false,
