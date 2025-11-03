@@ -47,13 +47,13 @@ class _NavBarMainState extends State<NavBarMain> {
           ),
           label: 'Defects',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(
-            MdiIcons.creditCard,
-            size: 35,
-          ),
-          label: 'Payment',
-        ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(
+        //     MdiIcons.creditCard,
+        //     size: 35,
+        //   ),
+        //   label: 'Payment',
+        // ),
         BottomNavigationBarItem(
           icon: Icon(
             MdiIcons.account,
@@ -80,9 +80,9 @@ class _NavBarMainState extends State<NavBarMain> {
         return 1;
       case MainViews.defects:
         return 2;
-      case MainViews.payment:
-        return 3;
       case MainViews.user:
+        return 3;
+      case MainViews.payment:
         return 4;
     }
   }
@@ -97,9 +97,10 @@ class _NavBarMainState extends State<NavBarMain> {
       case 2:
         return MainViews.defects;
       case 3:
-        return MainViews.payment;
-      case 4:
         return MainViews.user;
+      case 4:
+        return MainViews.payment;
+
       default:
         return MainViews.dashboard;
     }

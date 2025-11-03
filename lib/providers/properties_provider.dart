@@ -27,13 +27,14 @@ class PropertiesProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> getAllPropertiesByTenant() async {
+  Future getAllPropertiesByTenant() async {
     try {
       final List<Property?>? result =
           await PropertyServices().getAllPropertiesByTenant();
       if (result != null) {
         _propertiesListTenant = result;
         notifyListeners();
+        return result;
       }
     } catch (e) {
       print("Error fetching expenses: $e");

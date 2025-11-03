@@ -58,7 +58,9 @@ class _HomeSectionMainState extends State<HomeSectionMain>
       ),
 
       // MultiImagePicker
-      const MultiImagePickerExample(),
+      MultiImagePickerExample(
+        onImageSelected: (List<File> files) {},
+      ),
 
       // SingleImageUploader
       SingleImageUploader(

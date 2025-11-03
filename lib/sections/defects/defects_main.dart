@@ -1,8 +1,7 @@
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/sections/defects/add_new_property.dart';
 import 'package:cas_house/sections/defects/components/defects_tile.dart';
-import 'package:cas_house/sections/properties/add_new_property.dart';
-import 'package:cas_house/sections/properties/property_tile.dart';
 import 'package:cas_house/widgets/animated_background.dart';
 import 'package:cas_house/widgets/loading.dart';
 import 'package:cas_house/widgets/togglebutton_custom.dart';
@@ -20,24 +19,27 @@ class ShoppingMain extends StatefulWidget {
 class _ShoppingMainState extends State<ShoppingMain> {
   bool isLoading = false;
   bool showRentals = false;
-  late PropertiesProvider provider;
+  late PropertiesProvider propertiesProvider;
+  late DefectsProvider defectsProvider;
 
   @override
   void initState() {
     super.initState();
-    provider = Provider.of<PropertiesProvider>(context, listen: false);
+    propertiesProvider =
+        Provider.of<PropertiesProvider>(context, listen: false);
+    defectsProvider = Provider.of<DefectsProvider>(context, listen: false);
     _loadProperties();
   }
 
   Future<void> _loadProperties() async {
     setState(() => isLoading = true);
-    await provider.getAllPropertiesByOwner();
+    await propertiesProvider.getAllPropertiesByOwner();
     setState(() => isLoading = false);
   }
 
   Future<void> _loadRentals() async {
     setState(() => isLoading = true);
-    await provider.getAllPropertiesByTenant();
+    await propertiesProvider.getAllPropertiesByTenant();
     setState(() => isLoading = false);
   }
 
@@ -79,8 +81,8 @@ class _ShoppingMainState extends State<ShoppingMain> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            AddNewProperty(propertiesProvider: provider),
+                        builder: (_) => AddNewDefect(
+                            propertiesProvider: propertiesProvider),
                       ),
                     ),
                   ),

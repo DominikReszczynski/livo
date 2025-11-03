@@ -5,7 +5,14 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class MultiImagePickerExample extends StatefulWidget {
-  const MultiImagePickerExample({super.key});
+  final bool sendImagesButtonVisible;
+  final Function(List<File> files) onImageSelected;
+
+  const MultiImagePickerExample({
+    super.key,
+    this.sendImagesButtonVisible = true,
+    required this.onImageSelected,
+  });
 
   @override
   MultiImagePickerExampleState createState() => MultiImagePickerExampleState();
@@ -18,9 +25,15 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
   Future<void> _pickImages() async {
     final List<XFile> selectedImages = await _picker.pickMultiImage();
 
-    setState(() {
-      _images = selectedImages;
-    });
+    if (selectedImages.isNotEmpty) {
+      setState(() {
+        _images = selectedImages;
+      });
+
+      // Konwersja XFile -> File i zwrócenie listy
+      final List<File> files = selectedImages.map((x) => File(x.path)).toList();
+      widget.onImageSelected(files);
+    }
   }
 
   Future<void> _uploadImages() async {
@@ -46,14 +59,6 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
-          onPressed: _pickImages,
-          child: const Text("Wybierz zdjęcia"),
-        ),
-        ElevatedButton(
-          onPressed: _uploadImages,
-          child: const Text("Wyślij zdjęcia"),
-        ),
         _images.isNotEmpty
             ? SizedBox(
                 height: 200,
@@ -63,7 +68,7 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
                   itemCount: _images.length,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(4.0),
                       child: Stack(
                         children: [
                           ClipRRect(
@@ -90,6 +95,10 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
                                   setState(() {
                                     _images.removeAt(index);
                                   });
+                                  // Aktualizacja listy po usunięciu
+                                  widget.onImageSelected(
+                                    _images.map((x) => File(x.path)).toList(),
+                                  );
                                 },
                               ),
                             ),
@@ -101,6 +110,15 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
                 ),
               )
             : const SizedBox(),
+        ElevatedButton(
+          onPressed: _pickImages,
+          child: const Text("Wybierz zdjęcia"),
+        ),
+        if (widget.sendImagesButtonVisible)
+          ElevatedButton(
+            onPressed: _uploadImages,
+            child: const Text("Wyślij zdjęcia"),
+          ),
       ],
     );
   }
