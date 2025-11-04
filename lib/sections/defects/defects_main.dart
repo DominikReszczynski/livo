@@ -9,67 +9,69 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class ShoppingMain extends StatefulWidget {
-  const ShoppingMain({super.key});
+class DefectsMain extends StatefulWidget {
+  const DefectsMain({super.key});
 
   @override
-  _ShoppingMainState createState() => _ShoppingMainState();
+  State<DefectsMain> createState() => _DefectsMainState();
 }
 
-class _ShoppingMainState extends State<ShoppingMain> {
+class _DefectsMainState extends State<DefectsMain> {
   bool isLoading = false;
-  bool showRentals = false;
-  late PropertiesProvider propertiesProvider;
+  bool showSolved = false; // false = in progress, true = solved
   late DefectsProvider defectsProvider;
+  late PropertiesProvider propertiesProvider;
 
   @override
   void initState() {
     super.initState();
+    defectsProvider = Provider.of<DefectsProvider>(context, listen: false);
     propertiesProvider =
         Provider.of<PropertiesProvider>(context, listen: false);
-    defectsProvider = Provider.of<DefectsProvider>(context, listen: false);
-    _loadProperties();
+    _loadDefects();
   }
 
-  Future<void> _loadProperties() async {
+  Future<void> _loadDefects() async {
     setState(() => isLoading = true);
-    await propertiesProvider.getAllPropertiesByOwner();
+    await defectsProvider.fetchDefects();
     setState(() => isLoading = false);
   }
 
-  Future<void> _loadRentals() async {
-    setState(() => isLoading = true);
-    await propertiesProvider.getAllPropertiesByTenant();
-    setState(() => isLoading = false);
-  }
-
-  void _onToggle(bool rentalsSelected) {
-    if (showRentals == rentalsSelected) return;
-    setState(() => showRentals = rentalsSelected);
-    if (rentalsSelected) {
-      _loadRentals();
-    } else {
-      _loadProperties();
-    }
+  void _onToggle(bool solvedSelected) {
+    if (showSolved == solvedSelected) return;
+    setState(() => showSolved = solvedSelected);
   }
 
   @override
   Widget build(BuildContext context) {
-    final propertiesProvider =
-        Provider.of<PropertiesProvider>(context, listen: true);
+    final defects = Provider.of<DefectsProvider>(context).defects;
+
+    // Filtrowanie po statusie
+    final filtered = defects.where((d) {
+      if (showSolved) {
+        return d.status.toLowerCase() == 'naprawiony' ||
+            d.status.toLowerCase() == 'solved';
+      } else {
+        return d.status.toLowerCase() == 'nowy' ||
+            d.status.toLowerCase() == 'w trakcie' ||
+            d.status.toLowerCase() == 'in progress';
+      }
+    }).toList();
 
     return AnimatedBackground(
       child: SafeArea(
         child: Column(
           children: [
             const SizedBox(height: 12),
+
+            /// 🔹 Górny pasek z przyciskiem dodania defektu
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(
                     child: PremisesRentalsToggle(
-                      isRentals: showRentals,
+                      isRentals: showSolved,
                       onToggle: _onToggle,
                       firstText: 'In progress',
                       secondText: 'Solved',
@@ -84,16 +86,19 @@ class _ShoppingMainState extends State<ShoppingMain> {
                         builder: (_) => AddNewDefect(
                             propertiesProvider: propertiesProvider),
                       ),
-                    ),
+                    ).then((_) => _loadDefects()),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
+
+            /// 🔹 Lista defektów lub loader
             Expanded(
               child: isLoading
                   ? const Center(child: LoadingWidget())
-                  : _buildSeparatedList(showRentals, propertiesProvider),
+                  : _buildDefectsList(filtered),
             ),
           ],
         ),
@@ -101,22 +106,18 @@ class _ShoppingMainState extends State<ShoppingMain> {
     );
   }
 
-  Widget _buildSeparatedList(
-      bool rentals, PropertiesProvider propertiesProvider) {
-    final list = rentals
-        ? propertiesProvider.propertiesListTenant
-        : propertiesProvider.propertiesListOwner;
-
-    if (list.isEmpty) {
+  Widget _buildDefectsList(List defects) {
+    if (defects.isEmpty) {
       return const Center(child: Text('No defects found.'));
     }
 
     return ListView.separated(
-      itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      itemCount: defects.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 2),
       itemBuilder: (context, index) {
-        final item = list[index]!;
-        return DefectsTile();
+        final defect = defects[index];
+        return DefectsTile(defect: defect);
       },
     );
   }

@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:cas_house/models/defect.dart';
+import 'package:cas_house/models/property_short.dart';
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,13 +36,14 @@ class _AddNewDefectFormState extends State<AddNewDefectForm> {
 
   /// 🔹 Pobieramy listę wynajmowanych mieszkań z backendu
   Future<void> _fetchRentedProperties() async {
-    _rentedProperties =
+    final properties =
         await widget.propertiesProvider.getAllPropertiesByTenant();
 
-    // setState(() {
-    //   _rentedProperties =
-    //       allProps.where((p) => p.status == 'wynajęte').toList();
-    // });
+    print("wynajęte mieszkania: $properties");
+
+    setState(() {
+      _rentedProperties = properties;
+    });
   }
 
   /// 🔹 Walidacja i wysyłka formularza
@@ -62,25 +65,34 @@ class _AddNewDefectFormState extends State<AddNewDefectForm> {
     setState(() => _isLoading = true);
 
     try {
-      await Provider.of<DefectsProvider>(context, listen: false).addDefect(
-        _selectedProperty!.id!,
-        _titleController.text.trim(),
-        _descriptionController.text.trim(),
-        _imageFiles,
+      final defect = Defect(
+        property: PropertyShort(
+          id: _selectedProperty!.id!,
+          name: _selectedProperty!.name,
+          location: _selectedProperty!.location,
+        ),
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        status: "nowy",
       );
 
-      setState(() => _isLoading = false);
+      await Provider.of<DefectsProvider>(context, listen: false)
+          .addDefect(defect, _imageFiles);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Defekt został dodany.')),
-      );
-      Navigator.pop(context);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Defekt został dodany.')),
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Błąd podczas dodawania defektu.')),
-      );
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Błąd podczas dodawania defektu.')),
+        );
+      }
     }
   }
 

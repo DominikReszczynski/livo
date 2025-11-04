@@ -90,7 +90,7 @@ class HelloButtonState extends State<HelloButton> {
       case MainViews.properties:
         return const ExpensesSectionMain();
       case MainViews.defects:
-        return const ShoppingMain();
+        return const DefectsMain();
       case MainViews.user:
         return const UserSectionMain();
       case MainViews.payment:
