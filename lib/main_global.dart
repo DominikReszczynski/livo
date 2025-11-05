@@ -27,4 +27,17 @@ String formatDate(String date) {
   return "${parsedDate.day}.${parsedDate.month}.${parsedDate.year}";
 }
 
+Color statusColor(String status) {
+  switch (status.toLowerCase()) {
+    case 'naprawiony':
+    case 'solved':
+      return Colors.green;
+    case 'w trakcie':
+    case 'in progress':
+      return Colors.orange;
+    default:
+      return Colors.red;
+  }
+}
+
 User? loggedUser;

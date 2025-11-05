@@ -82,5 +82,7 @@
         <string>http</string>
         <string>https</string>
     </array>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+<string>Potrzebny dostęp do zapisu zdjęć w galerii.</string>
 </dict>
 </plist>

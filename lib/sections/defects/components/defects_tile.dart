@@ -1,26 +1,17 @@
 import 'package:cas_house/api_service.dart';
+import 'package:cas_house/main_global.dart';
 import 'package:cas_house/models/defect.dart';
+import 'package:cas_house/providers/defects_provider.dart';
+import 'package:cas_house/sections/defects/components/defects_details.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DefectsTile extends StatelessWidget {
   final Defect defect;
+  final DefectsProvider defectsProvider;
 
-  const DefectsTile({super.key, required this.defect});
-
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'naprawiony':
-      case 'nowy':
-        return Colors.green;
-      case 'w trakcie':
-        return Colors.orange;
-      case 'porzucony':
-        return Colors.red;
-      default:
-        return Colors.red; // "nowy" lub inne
-    }
-  }
+  const DefectsTile(
+      {super.key, required this.defect, required this.defectsProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +28,13 @@ class DefectsTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // TODO: otworzyć szczegóły defektu
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                DefectDetails(defect: defect, defectsProvider: defectsProvider),
+          ),
+        );
       },
       child: Card(
         elevation: 3,
@@ -129,7 +126,7 @@ class DefectsTile extends StatelessWidget {
                       width: 14,
                       height: 14,
                       decoration: BoxDecoration(
-                        color: _statusColor(defect.status),
+                        color: statusColor(defect.status),
                         shape: BoxShape.circle,
                       ),
                     ),

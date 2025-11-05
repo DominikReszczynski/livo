@@ -117,7 +117,7 @@ class _DefectsMainState extends State<DefectsMain> {
       separatorBuilder: (_, __) => const SizedBox(height: 2),
       itemBuilder: (context, index) {
         final defect = defects[index];
-        return DefectsTile(defect: defect);
+        return DefectsTile(defect: defect, defectsProvider: defectsProvider);
       },
     );
   }

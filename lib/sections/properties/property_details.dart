@@ -152,10 +152,13 @@ class _PropertyDetailsState extends State<PropertyDetails>
           TabBar(
             controller: _tabController,
             labelColor: Colors.black,
-            tabs: const [
-              Tab(text: "Home"),
-              Tab(text: "Nameless1"),
-              Tab(text: "Nameless2"),
+            tabs: [
+              const Tab(text: "Home"),
+              const Tab(text: "Nameless1"),
+              Tab(
+                  text: loggedUser?.id == widget.property.ownerId
+                      ? "Tenant"
+                      : "Landlord"),
               // if (widget.property.status == "wynajęte") Tab(text: "Najemca"),
             ],
           ),

@@ -20,4 +20,22 @@ class DefectsProvider extends ChangeNotifier {
     _defects = fetched;
     notifyListeners();
   }
+
+  // 🔹 Nowa metoda zmiany statusu
+  Future<void> updateStatus(String defectId, String newStatus) async {
+    try {
+      final updated =
+          await DefectsService.updateDefectStatus(defectId, newStatus);
+      if (updated != null) {
+        final index = _defects.indexWhere((d) => d.id == defectId);
+        if (index != -1) {
+          _defects[index] = updated;
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      print('❌ Błąd aktualizacji statusu: $e');
+      rethrow;
+    }
+  }
 }

@@ -86,4 +86,36 @@ class DefectsService {
       return [];
     }
   }
+
+  // 🔹 Update status
+  static Future<Defect?> updateDefectStatus(
+      String defectId, String status) async {
+    try {
+      final uri = Uri.parse('$_urlPrefix/defect/updateStatus');
+      final body = jsonEncode({
+        'defectId': defectId,
+        'status': status,
+      });
+
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          return Defect.fromJson(data['defect']);
+        } else {
+          throw Exception('Nie udało się zaktualizować statusu.');
+        }
+      } else {
+        throw Exception('Błąd serwera: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ [DefectsService.updateDefectStatus] $e');
+      rethrow;
+    }
+  }
 }

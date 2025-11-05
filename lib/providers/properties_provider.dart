@@ -65,9 +65,7 @@ class PropertiesProvider extends ChangeNotifier {
       final Property? result = await PropertyServices()
           .addTenantToProperty(propertyID, pin, storedUserId!);
       if (result != null) {
-        print('dupa');
         _propertiesListTenant.insert(0, result);
-        print('dupa2');
         notifyListeners();
         return true;
       }
