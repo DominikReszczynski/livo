@@ -41,3 +41,11 @@ Color statusColor(String status) {
 }
 
 User? loggedUser;
+
+class LivoColors {
+  static const Color background = Color(0xFFF1F1F1);
+  static const Color brandGold = Color(0xFF8C6F39);
+  static const Color brandBeige = Color(0xFFE7D7C6);
+  static const Color text = Colors.black;
+  static const Color card = Colors.white;
+}

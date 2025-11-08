@@ -37,8 +37,21 @@ dev_dependencies:
   json_serializable: ^6.8.0
   flutter_lints: ^4.0.0
   marquee: ^2.0.3
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+
+  image_path_android: assets/images/livo_ios.png
+  image_path_ios: assets/images/livo_ios.png
+
+  adaptive_icon_foreground: assets/images/livo_foreground.png
+  adaptive_icon_background: "#8C6F39"
+  min_sdk_android: 21
+  remove_alpha_ios: true

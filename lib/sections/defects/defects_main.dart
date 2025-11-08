@@ -28,33 +28,47 @@ class _DefectsMainState extends State<DefectsMain> {
     defectsProvider = Provider.of<DefectsProvider>(context, listen: false);
     propertiesProvider =
         Provider.of<PropertiesProvider>(context, listen: false);
-    _loadDefects();
+    _initialLoad();
   }
 
-  Future<void> _loadDefects() async {
+  Future<void> _initialLoad() async {
     setState(() => isLoading = true);
-    await defectsProvider.fetchDefects();
-    setState(() => isLoading = false);
+    await _refresh();
+    if (mounted) setState(() => isLoading = false);
+  }
+
+  /// Pull-to-refresh – lekko, bez globalnego spinnera ekranu.
+  Future<void> _refresh() async {
+    try {
+      await defectsProvider.fetchDefects();
+      if (mounted) setState(() {}); // odśwież widok po pobraniu
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nie udało się odświeżyć: $e')),
+      );
+    }
   }
 
   void _onToggle(bool solvedSelected) {
     if (showSolved == solvedSelected) return;
     setState(() => showSolved = solvedSelected);
+    // Nie pobieramy ponownie — filtrujemy lokalnie. Użytkownik może przeciągnąć, by pobrać.
   }
 
   @override
   Widget build(BuildContext context) {
-    final defects = Provider.of<DefectsProvider>(context).defects;
+    final defects = Provider.of<DefectsProvider>(context, listen: true).defects;
 
     // Filtrowanie po statusie
     final filtered = defects.where((d) {
+      final status = (d.status ?? '').toString().toLowerCase();
       if (showSolved) {
-        return d.status.toLowerCase() == 'naprawiony' ||
-            d.status.toLowerCase() == 'solved';
+        return status == 'naprawiony' || status == 'solved';
       } else {
-        return d.status.toLowerCase() == 'nowy' ||
-            d.status.toLowerCase() == 'w trakcie' ||
-            d.status.toLowerCase() == 'in progress';
+        return status == 'nowy' ||
+            status == 'w trakcie' ||
+            status == 'in progress';
       }
     }).toList();
 
@@ -84,9 +98,10 @@ class _DefectsMainState extends State<DefectsMain> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => AddNewDefect(
-                            propertiesProvider: propertiesProvider),
+                          propertiesProvider: propertiesProvider,
+                        ),
                       ),
-                    ).then((_) => _loadDefects()),
+                    ).then((_) => _refresh()),
                   ),
                 ],
               ),
@@ -94,11 +109,14 @@ class _DefectsMainState extends State<DefectsMain> {
 
             const SizedBox(height: 16),
 
-            /// 🔹 Lista defektów lub loader
+            /// 🔹 Lista defektów / loader + pull-to-refresh
             Expanded(
               child: isLoading
                   ? const Center(child: LoadingWidget())
-                  : _buildDefectsList(filtered),
+                  : RefreshIndicator.adaptive(
+                      onRefresh: _refresh,
+                      child: _buildDefectsList(filtered),
+                    ),
             ),
           ],
         ),
@@ -107,11 +125,20 @@ class _DefectsMainState extends State<DefectsMain> {
   }
 
   Widget _buildDefectsList(List defects) {
+    // RefreshIndicator wymaga przewijalnego dziecka — nawet gdy pusto.
     if (defects.isEmpty) {
-      return const Center(child: Text('No defects found.'));
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 120),
+          Center(child: Text('No defects found.')),
+          SizedBox(height: 400), // trochę „powietrza”, by łatwo pociągnąć
+        ],
+      );
     }
 
     return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       itemCount: defects.length,
       separatorBuilder: (_, __) => const SizedBox(height: 2),

@@ -24,29 +24,38 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
   void initState() {
     super.initState();
     provider = Provider.of<PropertiesProvider>(context, listen: false);
-    _loadProperties();
+    _initialLoad();
   }
 
-  Future<void> _loadProperties() async {
+  Future<void> _initialLoad() async {
     setState(() => isLoading = true);
-    await provider.getAllPropertiesByOwner();
-    setState(() => isLoading = false);
+    await _refresh();
+    if (mounted) setState(() => isLoading = false);
   }
 
-  Future<void> _loadRentals() async {
-    setState(() => isLoading = true);
-    await provider.getAllPropertiesByTenant();
-    setState(() => isLoading = false);
+  /// Pull-to-refresh — bez przełączania globalnego spinnera ekranu.
+  Future<void> _refresh() async {
+    try {
+      if (showRentals) {
+        await provider.getAllPropertiesByTenant();
+      } else {
+        await provider.getAllPropertiesByOwner();
+      }
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nie udało się odświeżyć: $e')),
+      );
+    }
   }
 
-  void _onToggle(bool rentalsSelected) {
+  Future<void> _onToggle(bool rentalsSelected) async {
     if (showRentals == rentalsSelected) return;
     setState(() => showRentals = rentalsSelected);
-    if (rentalsSelected) {
-      _loadRentals();
-    } else {
-      _loadProperties();
-    }
+    setState(() => isLoading = true);
+    await _refresh();
+    if (mounted) setState(() => isLoading = false);
   }
 
   @override
@@ -89,7 +98,13 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
             Expanded(
               child: isLoading
                   ? const Center(child: LoadingWidget())
-                  : _buildSeparatedList(showRentals, propertiesProvider),
+                  : RefreshIndicator.adaptive(
+                      onRefresh: _refresh,
+                      child: _buildSeparatedList(
+                        showRentals,
+                        propertiesProvider,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -103,13 +118,23 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
         ? propertiesProvider.propertiesListTenant
         : propertiesProvider.propertiesListOwner;
 
+    // RefreshIndicator wymaga przewijalnego dziecka — nawet gdy pusto.
     if (list.isEmpty) {
-      return const Center(child: Text('No properties found.'));
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 120),
+          Center(child: Text('No properties found.')),
+          SizedBox(height: 400),
+        ],
+      );
     }
 
     return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 16),
       itemCount: list.length,
-      separatorBuilder: (_, __) => const SizedBox(),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = list[index]!;
         return PropertyTile(provider: provider, property: item);

@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
         valueListenable: chosenMode,
         builder: (context, themeMode, _) {
           return MaterialApp(
+            title: 'Livo',
             debugShowCheckedModeBanner: false,
             theme: ThemeData.light(),
             darkTheme: ThemeData.dark(),
