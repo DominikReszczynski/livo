@@ -5,6 +5,7 @@ import 'package:cas_house/main_global.dart';
 import 'package:cas_house/models/properties.dart';
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/sections/properties/add_tenant.dart';
+import 'package:cas_house/sections/properties/property_detile_tabs/rental_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -148,13 +149,19 @@ class _PropertyDetailsState extends State<PropertyDetails>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(widget.property.name,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 12),
           TabBar(
             controller: _tabController,
             labelColor: Colors.black,
             tabs: [
               const Tab(text: "Home"),
-              const Tab(text: "Nameless1"),
+              const Tab(text: "Rentals info"),
               Tab(
                   text: loggedUser?.id == widget.property.ownerId
                       ? "Tenant"
@@ -167,7 +174,13 @@ class _PropertyDetailsState extends State<PropertyDetails>
               controller: _tabController,
               children: [
                 _buildMenuTab(),
-                const Center(child: Text("No promotions available")),
+                Center(
+                    child: widget.property.status == "wynajęte"
+                        ? RentalInfo(
+                            property: widget.property,
+                            provider: widget.provider,
+                          )
+                        : Text("In that place will be after rental info")),
                 const Center(child: Text("No reviews yet")),
                 // if (widget.property.status == "wynajęte")
                 //   Center(child: Text("No reviews yet")),

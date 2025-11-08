@@ -20,104 +20,155 @@ class MultiImagePickerExample extends StatefulWidget {
 
 class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
   final ImagePicker _picker = ImagePicker();
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
+
+  // Ustawienia wspólne dla obu kafelków (identyczny rozmiar!)
+  static const double _tileSize = 180;
+  static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
+  static const EdgeInsets _tilePadding = EdgeInsets.all(4);
 
   Future<void> _pickImages() async {
     final List<XFile> selectedImages = await _picker.pickMultiImage();
+    if (selectedImages.isEmpty) return;
 
-    if (selectedImages.isNotEmpty) {
-      setState(() {
-        _images = selectedImages;
-      });
+    setState(() {
+      _images.addAll(selectedImages);
+    });
 
-      // Konwersja XFile -> File i zwrócenie listy
-      final List<File> files = selectedImages.map((x) => File(x.path)).toList();
-      widget.onImageSelected(files);
-    }
+    widget.onImageSelected(_images.map((x) => File(x.path)).toList());
   }
 
   Future<void> _uploadImages() async {
-    for (var image in _images) {
-      const String urlPrefix = ApiService.baseUrl;
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$urlPrefix/upload/images'),
-      );
-      request.files
-          .add(await http.MultipartFile.fromPath('images', image.path));
-      var response = await request.send();
+    // TODO wysyłanie zdjęć i dodawanie do odpowiedniedniego property przez onImageSelected
+    for (final image in _images) {
+      try {
+        const String urlPrefix = ApiService.baseUrl;
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('$urlPrefix/upload/images'),
+        );
+        request.files
+            .add(await http.MultipartFile.fromPath('images', image.path));
 
-      if (response.statusCode == 200) {
-        print("Upload ok");
-      } else {
-        print("Upload fail: ${response.statusCode}");
+        final response = await request.send();
+
+        if (!mounted) continue;
+        if (response.statusCode == 200) {
+          debugPrint("Upload ok: ${image.path}");
+        } else {
+          debugPrint("Upload fail: ${response.statusCode}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Błąd wysyłki: ${response.statusCode}')),
+          );
+        }
+      } catch (e) {
+        debugPrint("Upload error: $e");
+        if (!mounted) continue;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Błąd wysyłki: $e')),
+        );
       }
     }
   }
 
+  // ---- Kafelki --------------------------------------------------------------
+
+  Widget _addTile() {
+    return SizedBox.square(
+      dimension: _tileSize,
+      child: ClipRRect(
+        borderRadius: _radius,
+        child: Material(
+          color: Colors.black12,
+          child: InkWell(
+            onTap: _pickImages,
+            child: const Center(
+              child: Icon(Icons.add_a_photo, size: 48, color: Colors.black26),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _imageTile(int index) {
+    final file = _images[index];
+    return SizedBox.square(
+      dimension: _tileSize,
+      child: Stack(
+        children: [
+          // Obraz wypełnia cały kafelek 1:1
+          ClipRRect(
+            borderRadius: _radius,
+            child: SizedBox.expand(
+              child: Image.file(
+                File(file.path),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // X do usuwania
+          Positioned(
+            top: 6,
+            right: 6,
+            child: Material(
+              color: Colors.black.withOpacity(0.6),
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () {
+                  setState(() => _images.removeAt(index));
+                  widget.onImageSelected(
+                      _images.map((x) => File(x.path)).toList());
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(6),
+                  child: Icon(Icons.close, size: 18, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---- UI -------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
+    // PUSTY STAN: jeden, wycentrowany kafelek „+”
+    if (_images.isEmpty) {
+      return Center(child: _addTile());
+    }
+
+    // LISTA: zdjęcia + kafelek dodawania na końcu
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _images.isNotEmpty
-            ? SizedBox(
-                height: 200,
-                width: double.infinity,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _images.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              File(_images[index].path),
-                              height: 180,
-                              width: 180,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Positioned(
-                            top: 5,
-                            right: 5,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.close,
-                                    color: Colors.white, size: 20),
-                                onPressed: () {
-                                  setState(() {
-                                    _images.removeAt(index);
-                                  });
-                                  // Aktualizacja listy po usunięciu
-                                  widget.onImageSelected(
-                                    _images.map((x) => File(x.path)).toList(),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              )
-            : const SizedBox(),
-        ElevatedButton(
-          onPressed: _pickImages,
-          child: const Text("Wybierz zdjęcia"),
+        SizedBox(
+          height: _tileSize + 20,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _images.length + 1,
+            itemBuilder: (context, index) {
+              if (index == _images.length) {
+                return Padding(padding: _tilePadding, child: _addTile());
+              }
+              return Padding(padding: _tilePadding, child: _imageTile(index));
+            },
+          ),
         ),
-        if (widget.sendImagesButtonVisible)
-          ElevatedButton(
-            onPressed: _uploadImages,
-            child: const Text("Wyślij zdjęcia"),
+        if (widget.sendImagesButtonVisible && _images.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Align(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                onPressed: _uploadImages,
+                child: const Text("Wyślij zdjęcia"),
+              ),
+            ),
           ),
       ],
     );
