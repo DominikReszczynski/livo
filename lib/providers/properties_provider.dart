@@ -115,4 +115,40 @@ class PropertiesProvider extends ChangeNotifier {
     }
     return false;
   }
+
+  Future<bool> addRentalImagesToProperty(
+      String propertyID, List<File> images) async {
+    print(images.length);
+    try {
+      final newFilenames =
+          await PropertyServices().addRentalImages(propertyID, images);
+      if (newFilenames.isEmpty) {
+        return false;
+      }
+
+      // helper do bezpiecznego dopięcia listy plików (bez duplikatów)
+      void _appendTo(List<Property?> list) {
+        for (final p in list) {
+          if (p?.id == propertyID) {
+            p!.imageFilenames ??= <String>[];
+            for (final name in newFilenames) {
+              if (!p.imageFilenames!.contains(name)) {
+                p.imageFilenames!.add(name);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      _appendTo(_propertiesListOwner);
+      _appendTo(_propertiesListTenant);
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print("Error adding rental images: $e");
+      return false;
+    }
+  }
 }

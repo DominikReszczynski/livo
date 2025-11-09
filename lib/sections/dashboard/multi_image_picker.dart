@@ -7,11 +7,13 @@ import 'package:http/http.dart' as http;
 class MultiImagePickerExample extends StatefulWidget {
   final bool sendImagesButtonVisible;
   final Function(List<File> files) onImageSelected;
+  final Function()? onUploadComplete;
 
   const MultiImagePickerExample({
     super.key,
     this.sendImagesButtonVisible = true,
     required this.onImageSelected,
+    this.onUploadComplete,
   });
 
   @override
@@ -39,7 +41,6 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
   }
 
   Future<void> _uploadImages() async {
-    // TODO wysyłanie zdjęć i dodawanie do odpowiedniedniego property przez onImageSelected
     for (final image in _images) {
       try {
         const String urlPrefix = ApiService.baseUrl;
@@ -165,7 +166,11 @@ class MultiImagePickerExampleState extends State<MultiImagePickerExample> {
             child: Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: _uploadImages,
+                onPressed: widget.onUploadComplete != null
+                    ? () async {
+                        await widget.onUploadComplete!();
+                      }
+                    : _uploadImages,
                 child: const Text("Wyślij zdjęcia"),
               ),
             ),

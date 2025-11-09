@@ -1,9 +1,11 @@
+import 'package:cas_house/api_service.dart';
 import 'package:cas_house/models/user.dart';
 import 'package:flutter/material.dart';
 
 String apiUrl = "http://10.0.2.2:3000";
 String baseUrl = 'http://localhost:3000';
 
+String urlPrefix = ApiService.baseUrl;
 // ! Chosen mode
 ValueNotifier<ThemeMode> chosenMode = ValueNotifier(ThemeMode.light);
 

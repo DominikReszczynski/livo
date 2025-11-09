@@ -1,6 +1,6 @@
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
-import 'package:cas_house/sections/defects/add_new_property.dart';
+import 'package:cas_house/sections/defects/add_new_defect.dart';
 import 'package:cas_house/sections/defects/components/defects_tile.dart';
 import 'package:cas_house/widgets/animated_background.dart';
 import 'package:cas_house/widgets/loading.dart';

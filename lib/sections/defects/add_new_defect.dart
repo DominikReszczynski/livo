@@ -1,7 +1,5 @@
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/sections/defects/add_new_defect_form.dart';
-import 'package:cas_house/sections/properties/add_new_property_owner.dart';
-import 'package:cas_house/sections/properties/add_new_property_tenant.dart';
 import 'package:flutter/material.dart';
 
 class AddNewDefect extends StatefulWidget {

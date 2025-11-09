@@ -157,4 +157,53 @@ class PropertyServices {
     }
     return null;
   }
+
+// add rental images and documents in future
+  Future<List<String>> addRentalImages(
+      String propertyId, List<File> images) async {
+    print(
+        "Dodawanie zdjęć do mieszkania o ID: $propertyId, liczba zdjęć: ${images.length}");
+    // 1) upload zdjęć
+    List<String> uploadedFilenames = [];
+    if (images.isNotEmpty) {
+      final uploadUrl = Uri.parse('${ApiService.baseUrl}/upload/images');
+      final uploadRequest = http.MultipartRequest('POST', uploadUrl);
+
+      for (final img in images) {
+        uploadRequest.files.add(
+          await http.MultipartFile.fromPath('images', img.path),
+        );
+      }
+
+      final uploadResponse = await uploadRequest.send();
+      final body = await uploadResponse.stream.bytesToString();
+
+      if (uploadResponse.statusCode != 200) {
+        throw Exception(
+            'Błąd uploadu zdjęć (${uploadResponse.statusCode}): $body');
+      }
+      final jsonResponse = json.decode(body);
+      uploadedFilenames =
+          List<String>.from(jsonResponse['filenames'] ?? const []);
+    }
+
+    // 2) przypięcie listy nazw do mieszkania
+    final uri = Uri.parse('${ApiService.baseUrl}/property/addRentalImages');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'propertyId': propertyId, // u Ciebie ID to String
+        'imageFilenames': uploadedFilenames,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = json.decode(response.body);
+      return uploadedFilenames;
+    } else {
+      throw Exception(
+          'Błąd przypięcia zdjęć: ${response.statusCode} ${response.body}');
+    }
+  }
 }
