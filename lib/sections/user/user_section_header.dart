@@ -1,82 +1,67 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cas_house/main_global.dart';
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class UserSectionHeader extends StatefulWidget {
+class UserSectionHeader extends StatelessWidget {
   const UserSectionHeader({super.key});
 
   @override
-  State<UserSectionHeader> createState() => _UserSectionHeaderState();
-}
-
-class _UserSectionHeaderState extends State<UserSectionHeader> {
-  @override
   Widget build(BuildContext context) {
-    print("loggedUser: $loggedUser");
-    return Container(
-      width: double.maxFinite,
-      decoration: const BoxDecoration(
-          color: Colors.transparent, border: Border(bottom: BorderSide())),
-      child: Column(
-        children: [
-          ValueListenableBuilder<ThemeMode>(
-              valueListenable: chosenMode,
-              builder: (context, themeMode, _) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          MdiIcons.bookEdit,
-                          color: chosenMode.value == ThemeMode.dark
-                              ? Colors.white
-                              : Colors.black,
-                        )),
-                    IconButton(
-                        onPressed: () {
-                          chosenMode.value = chosenMode.value == ThemeMode.light
-                              ? ThemeMode.dark
-                              : ThemeMode.light;
-                        },
-                        icon: Icon(
-                          MdiIcons.whiteBalanceSunny,
-                          color: chosenMode.value == ThemeMode.dark
-                              ? Colors.white
-                              : Colors.black,
-                        ))
-                  ],
-                );
-              }),
-          Column(
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    color: Colors.grey),
-                child: Center(
-                    child: Text(
-                  loggedUser!.username[0].toUpperCase(),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 60,
-                      color: Colors.white),
-                )),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: AutoSizeText(
-                  loggedUser!.username,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w900, fontSize: 30),
+    final theme = Theme.of(context);
+    final username = loggedUser?.username ?? '';
+    final email = loggedUser?.email ?? '';
+    final initial = (username.isNotEmpty ? username : email).isNotEmpty
+        ? (username.isNotEmpty ? username[0] : email[0]).toUpperCase()
+        : '?';
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Column(
+          children: [
+            // Avatar
+            CircleAvatar(
+              radius: 44,
+              backgroundColor: Colors.grey.shade300,
+              child: Text(
+                initial,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 44,
+                  color: Colors.grey.shade700,
+                  height: 1,
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 12),
+
+            // Nazwa
+            AutoSizeText(
+              username.isNotEmpty ? username : email,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 6),
+
+            // Email
+            if (username.isNotEmpty && email.isNotEmpty)
+              Text(
+                email,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(.65),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+            const SizedBox(height: 16),
+            const Divider(indent: 24, endIndent: 24, height: 1),
+          ],
+        ),
       ),
     );
   }

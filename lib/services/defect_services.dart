@@ -118,4 +118,16 @@ class DefectsService {
       rethrow;
     }
   }
+
+  Future<List<Defect>> getDefectsByUser(String userId) async {
+    final uri = Uri.parse('${ApiService.baseUrl}/defects/byUser/$userId');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      final data = json.decode(res.body) as Map<String, dynamic>;
+      final list = (data['defects'] as List).cast<Map<String, dynamic>>();
+      return list.map((e) => Defect.fromJson(e)).toList();
+    } else {
+      throw Exception('Błąd pobierania defektów: ${res.statusCode}');
+    }
+  }
 }

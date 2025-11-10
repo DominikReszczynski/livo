@@ -1,3 +1,4 @@
+import 'package:cas_house/main_global.dart';
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -102,7 +103,7 @@ class _AddTenantState extends State<AddTenant> {
               PinCodeTextField(
                 appContext: context,
                 length: 5,
-                obscureText: false,
+                obscureText: true,
                 animationType: AnimationType.fade,
                 autoFocus: true,
                 keyboardType: TextInputType.number,
@@ -114,9 +115,9 @@ class _AddTenantState extends State<AddTenant> {
                   activeFillColor: Colors.white,
                   selectedFillColor: Colors.grey.shade100,
                   inactiveFillColor: Colors.grey.shade100,
-                  activeColor: Colors.blue,
-                  selectedColor: Colors.blueAccent,
-                  inactiveColor: Colors.grey,
+                  activeColor: LivoColors.brandGold,
+                  selectedColor: Colors.grey,
+                  inactiveColor: LivoColors.brandGold,
                 ),
                 animationDuration: const Duration(milliseconds: 300),
                 enableActiveFill: true,

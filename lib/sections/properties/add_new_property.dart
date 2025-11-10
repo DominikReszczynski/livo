@@ -1,3 +1,4 @@
+import 'package:cas_house/main_global.dart';
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/sections/properties/add_new_property_owner.dart';
 import 'package:cas_house/sections/properties/add_new_property_tenant.dart';
@@ -36,6 +37,9 @@ class _AddNewPropertyState extends State<AddNewProperty>
           const SizedBox(height: 16),
           TabBar(
             controller: _tabController,
+            overlayColor:
+                WidgetStateProperty.all(LivoColors.brandGold.withOpacity(0.1)),
+            indicatorColor: LivoColors.brandGold,
             labelColor: Colors.black,
             tabs: const [
               Tab(text: "Tenant"),

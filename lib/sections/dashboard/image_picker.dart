@@ -43,15 +43,28 @@ class _SingleImageUploaderState extends State<SingleImageUploader> {
   //     print('Upload failed');
   //   }
   // }
-
+  static const double _tileSize = 180;
+  static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         _selectedImage == null
-            ? ElevatedButton(
-                onPressed: _pickImage,
-                child: const Text("Dodaj zdjęcie"),
+            ? SizedBox.square(
+                dimension: _tileSize,
+                child: ClipRRect(
+                  borderRadius: _radius,
+                  child: Material(
+                    color: Colors.black12,
+                    child: InkWell(
+                      onTap: _pickImage,
+                      child: const Center(
+                        child: Icon(Icons.add_a_photo,
+                            size: 48, color: Colors.black26),
+                      ),
+                    ),
+                  ),
+                ),
               )
             : SizedBox(),
         if (_selectedImage != null)
@@ -88,8 +101,6 @@ class _SingleImageUploaderState extends State<SingleImageUploader> {
                 ),
               ],
             ),
-
-            // Image.file(_selectedImage!, height: 150),
           )
       ],
     );

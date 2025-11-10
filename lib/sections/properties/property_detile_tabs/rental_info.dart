@@ -6,7 +6,6 @@ import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/sections/dashboard/multi_image_picker.dart';
 import 'package:cas_house/widgets/full_screen_image_viewer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class RentalInfo extends StatefulWidget {
   final PropertiesProvider provider;
@@ -54,7 +53,6 @@ class _RentalInfoState extends State<RentalInfo>
             },
           ),
         ] else
-          // 🔽 przewijalna siatka 2-kolumnowa (1 lewa + 1 prawa)
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),

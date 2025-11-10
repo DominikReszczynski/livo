@@ -1,12 +1,14 @@
 import 'dart:io';
-import 'package:cas_house/models/defect.dart';
-import 'package:cas_house/models/property_short.dart';
-import 'package:cas_house/providers/defects_provider.dart';
+import 'package:cas_house/main_global.dart';
+import 'package:cas_house/widgets/pill_text_from_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cas_house/sections/dashboard/multi_image_picker.dart';
+import 'package:cas_house/models/defect.dart';
+import 'package:cas_house/models/property_short.dart';
 import 'package:cas_house/models/properties.dart';
+import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
+import 'package:cas_house/sections/dashboard/multi_image_picker.dart';
 
 class AddNewDefectForm extends StatefulWidget {
   final PropertiesProvider propertiesProvider;
@@ -23,10 +25,12 @@ class _AddNewDefectFormState extends State<AddNewDefectForm> {
 
   List<File> _imageFiles = [];
   bool _imageError = false;
-  bool _isLoading = false;
+  bool _isSubmitting = false;
 
   Property? _selectedProperty;
   List<Property> _rentedProperties = [];
+  bool _listLoading = false;
+  String? _listError;
 
   @override
   void initState() {
@@ -34,36 +38,51 @@ class _AddNewDefectFormState extends State<AddNewDefectForm> {
     _fetchRentedProperties();
   }
 
-  /// 🔹 Pobieramy listę wynajmowanych mieszkań z backendu
-  Future<void> _fetchRentedProperties() async {
-    final properties =
-        await widget.propertiesProvider.getAllPropertiesByTenant();
-
-    print("wynajęte mieszkania: $properties");
-
-    setState(() {
-      _rentedProperties = properties;
-    });
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
-  /// 🔹 Walidacja i wysyłka formularza
+  /// pobranie lokali, gdzie zalogowany user jest najemcą
+  Future<void> _fetchRentedProperties() async {
+    setState(() {
+      _listLoading = true;
+      _listError = null;
+    });
+    try {
+      final res = await widget.propertiesProvider.getAllPropertiesByTenant();
+      final list = (res as List?)
+              ?.whereType<Property?>()
+              .where((p) => p != null)
+              .map((p) => p!)
+              .toList() ??
+          <Property>[];
+      if (!mounted) return;
+      setState(() {
+        _rentedProperties = list;
+      });
+    } catch (e) {
+      setState(() => _listError = 'Nie udało się pobrać mieszkań');
+    } finally {
+      if (mounted) setState(() => _listLoading = false);
+    }
+  }
+
+  bool get _canSubmit =>
+      _selectedProperty != null &&
+      _imageFiles.isNotEmpty &&
+      _formKey.currentState?.validate() == true &&
+      !_isSubmitting;
+
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _imageError = _imageFiles.isEmpty);
 
-    if (_selectedProperty == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Wybierz mieszkanie')),
-      );
-      return;
-    }
+    if (!_canSubmit) return;
 
-    if (_imageFiles.isEmpty) {
-      setState(() => _imageError = true);
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
+    setState(() => _isSubmitting = true);
     try {
       final defect = Defect(
         property: PropertyShort(
@@ -76,129 +95,225 @@ class _AddNewDefectFormState extends State<AddNewDefectForm> {
         status: "nowy",
       );
 
-      await Provider.of<DefectsProvider>(context, listen: false)
-          .addDefect(defect, _imageFiles);
+      await context.read<DefectsProvider>().addDefect(defect, _imageFiles);
 
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Defekt został dodany.')),
-        );
-        Navigator.pop(context);
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Defekt został dodany.')),
+      );
+      Navigator.pop(context);
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Błąd podczas dodawania defektu.')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Błąd podczas dodawania defektu.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  InputDecoration _pillDecoration({
+    String? hintText,
+    Widget? prefixIcon,
+  }) {
+    final theme = Theme.of(context);
+    return InputDecoration(
+      hintText: hintText,
+      prefixIcon: prefixIcon,
+      filled: true,
+      fillColor: theme.colorScheme.surface,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(24),
+        borderSide: BorderSide(
+          color: theme.colorScheme.primary.withOpacity(.35),
+          width: 1.2,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// 🔹 Dropdown z wynajmowanymi mieszkaniami
-                  DropdownButtonFormField<Property>(
-                    value: _selectedProperty,
-                    items: _rentedProperties
-                        .map((p) => DropdownMenuItem<Property>(
-                              value: p,
-                              child: Text(p.name),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedProperty = val;
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Wybierz wynajęte mieszkanie',
-                    ),
-                    validator: (val) =>
-                        val == null ? 'Wybierz mieszkanie' : null,
-                  ),
+    final theme = Theme.of(context);
 
-                  _selectedProperty != null
-                      ? Column(children: [
-                          const SizedBox(height: 16),
+    if (_listLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-                          /// 🔹 Tytuł defektu
-                          TextFormField(
-                            controller: _titleController,
-                            decoration: const InputDecoration(
-                                labelText: 'Tytuł defektu'),
-                            validator: (v) => v == null || v.trim().isEmpty
-                                ? 'Wymagany tytuł'
-                                : null,
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          /// 🔹 Opis defektu
-                          TextFormField(
-                            controller: _descriptionController,
-                            maxLines: 3,
-                            decoration: const InputDecoration(
-                                labelText: 'Opis defektu'),
-                            validator: (v) => v == null || v.trim().isEmpty
-                                ? 'Wymagany opis'
-                                : null,
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          /// 🔹 Zdjęcia defektu
-                          MultiImagePickerExample(
-                            sendImagesButtonVisible: false,
-                            onImageSelected: (files) {
-                              setState(() {
-                                _imageFiles = List<File>.from(files);
-                                _imageError = false;
-                              });
-                            },
-                          ),
-
-                          if (_imageError)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8.0),
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // KARTA: wybór mieszkania
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Card(
+                color: LivoColors.brandBeige,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Wybierz mieszkanie',
+                            style: TextStyle(fontWeight: FontWeight.w800)),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<Property>(
+                        value: _selectedProperty,
+                        items: _rentedProperties.map((p) {
+                          return DropdownMenuItem<Property>(
+                            value: p,
+                            child:
+                                Text(p.name, overflow: TextOverflow.ellipsis),
+                          );
+                        }).toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedProperty = val),
+                        decoration: _pillDecoration(
+                            prefixIcon: const Icon(Icons.apartment_outlined)),
+                        validator: (val) =>
+                            val == null ? 'Wybierz mieszkanie' : null,
+                      ),
+                      if (_listError != null) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(_listError!,
+                              style: const TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                      if (_selectedProperty != null) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 18),
+                            const SizedBox(width: 6),
+                            Expanded(
                               child: Text(
-                                'Wymagane zdjęcia',
-                                style: TextStyle(color: Colors.red),
+                                _selectedProperty!.location,
+                                style: TextStyle(
+                                    color: theme.textTheme.bodySmall?.color
+                                        ?.withOpacity(.8)),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                          ],
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
-                          const SizedBox(height: 24),
+            const SizedBox(height: 12),
 
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _submitForm,
-                              icon: const Icon(Icons.report_problem),
-                              label: const Text('Zgłoś defekt'),
-                            ),
-                          ),
-                        ])
-                      : Container(),
+            // KARTA: dane defektu
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Card(
+                color: LivoColors.brandBeige,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      PillTextFormField(
+                        controller: _titleController,
+                        hintText: 'Tytuł defektu',
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Wymagany tytuł'
+                            : null,
+                        prefixIcon: const Icon(Icons.report_problem_outlined),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 4,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Wymagany opis'
+                            : null,
+                        decoration: _pillDecoration(
+                            hintText: 'Opis defektu',
+                            prefixIcon: const Icon(Icons.notes)),
+                        key: const Key('defect-desc'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // KARTA: zdjęcia
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  MultiImagePickerExample(
+                    sendImagesButtonVisible: false,
+                    onImageSelected: (files) {
+                      setState(() {
+                        _imageFiles = List<File>.from(files);
+                        _imageError = false;
+                      });
+                    },
+                  ),
+                  if (_imageError)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Wymagane zdjęcia',
+                            style: TextStyle(color: Colors.red)),
+                      ),
+                    ),
                 ],
               ),
             ),
-          );
-  }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
+            const SizedBox(height: 16),
+
+            // SUBMIT
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _canSubmit ? _submitForm : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: LivoColors.brandGold,
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(_isSubmitting ? 'Wysyłanie…' : 'Zgłoś defekt'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -3,9 +3,12 @@ import 'dart:io';
 import 'package:cas_house/api_service.dart';
 import 'package:cas_house/main_global.dart';
 import 'package:cas_house/models/properties.dart';
+import 'package:cas_house/models/user.dart';
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/sections/properties/add_tenant.dart';
+import 'package:cas_house/sections/properties/property_detile_tabs/landlord_info.dart';
 import 'package:cas_house/sections/properties/property_detile_tabs/rental_info.dart';
+import 'package:cas_house/services/user_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,11 +28,20 @@ class PropertyProvider {}
 class _PropertyDetailsState extends State<PropertyDetails>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  Future<User?>? _otherUserFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    final bool iAmOwner = loggedUser?.id == widget.property.ownerId;
+    final String? otherUserId = iAmOwner
+        ? widget.property.tenantId // może być null gdy niewynajęte
+        : widget.property.ownerId;
+
+    if (otherUserId != null && otherUserId.isNotEmpty) {
+      _otherUserFuture = UserServices().getUserById(otherUserId);
+    }
   }
 
   @override
@@ -158,6 +170,9 @@ class _PropertyDetailsState extends State<PropertyDetails>
           const SizedBox(height: 12),
           TabBar(
             controller: _tabController,
+            overlayColor:
+                WidgetStateProperty.all(LivoColors.brandGold.withOpacity(0.1)),
+            indicatorColor: LivoColors.brandGold,
             labelColor: Colors.black,
             tabs: [
               const Tab(text: "Home"),
@@ -175,15 +190,48 @@ class _PropertyDetailsState extends State<PropertyDetails>
               children: [
                 _buildMenuTab(),
                 Center(
-                    child: widget.property.status == "wynajęte"
-                        ? RentalInfo(
-                            property: widget.property,
-                            provider: widget.provider,
-                          )
-                        : Text("In that place will be after rental info")),
-                const Center(child: Text("No reviews yet")),
-                // if (widget.property.status == "wynajęte")
-                //   Center(child: Text("No reviews yet")),
+                  child: widget.property.status == "wynajęte"
+                      ? RentalInfo(
+                          property: widget.property, provider: widget.provider)
+                      : const Text("Brak aktywnego najmu"),
+                ),
+
+                // 3. zakładka: Tenant / Landlord
+                Builder(
+                  builder: (_) {
+                    final bool iAmOwner =
+                        loggedUser?.id == widget.property.ownerId;
+                    final String role = iAmOwner ? "Najemca" : "Właściciel";
+
+                    if (_otherUserFuture == null) {
+                      return Center(child: Text("Brak danych: $role"));
+                    }
+
+                    return FutureBuilder<User?>(
+                      future: _otherUserFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (!snapshot.hasData || snapshot.data == null) {
+                          return Center(
+                              child: Text("Nie udało się pobrać: $role"));
+                        }
+                        final user = snapshot.data!;
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: PersonHeader(
+                            user: user,
+                            phone: null, // jeśli backend zwraca phone → przekaż
+                            roleLabel: role,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ],
             ),
           )

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cas_house/api_service.dart';
+import 'package:cas_house/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -92,5 +93,18 @@ class UserServices {
     await prefs.remove('refreshToken');
     await prefs.setBool('loggedIn', false);
     print('UserServices: wylogowano');
+  }
+
+  Future<User?> getUserById(String id) async {
+    print("pruba");
+    final uri = Uri.parse('${ApiService.baseUrl}/user/getById');
+    final res = await http.post(uri,
+        body: jsonEncode({'id': id}),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'});
+    if (res.statusCode == 200) {
+      final data = json.decode(res.body);
+      return User.fromJson(data['user'] as Map<String, dynamic>);
+    }
+    return null;
   }
 }
