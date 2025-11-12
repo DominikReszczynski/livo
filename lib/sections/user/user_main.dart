@@ -1,11 +1,11 @@
 import 'package:cas_house/providers/user_provider.dart';
 import 'package:cas_house/sections/login.dart';
+import 'package:cas_house/sections/user/edit_user_screen.dart';
 import 'package:cas_house/sections/user/user_section_header.dart';
 import 'package:cas_house/services/user_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:cas_house/main_global.dart'; // dla loggedUser & chosenMode
 
 class UserSectionMain extends StatefulWidget {
   const UserSectionMain({super.key});
@@ -20,14 +20,23 @@ class _UserSectionMainState extends State<UserSectionMain> {
     final theme = Theme.of(context);
 
     return Consumer<UserProvider>(builder: (context, userProvider, _) {
-      final email = loggedUser?.email ?? '';
-      final username = loggedUser?.username ?? '';
+      final user = userProvider.user;
+      final email = user?.email ?? '';
+      final username = user?.username ?? '';
+      final phone = user?.phone ?? '';
 
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const SizedBox(height: 16),
-          const UserSectionHeader(),
+
+          // Header dostaje dane Z PROVIDERA (nie z globala)
+          UserSectionHeader(
+            username: username,
+            email: email,
+            phone: phone,
+          ),
+
           const SizedBox(height: 16),
 
           // KARTA: Dane i akcje
@@ -39,9 +48,16 @@ class _UserSectionMainState extends State<UserSectionMain> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.person_outline),
-                  title: Text(username,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(email),
+                  title: Text(
+                    username.isNotEmpty ? username : email,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(
+                    [
+                      if (email.isNotEmpty) email,
+                      if (phone.isNotEmpty) phone,
+                    ].join('\n'),
+                  ),
                   trailing: IconButton(
                     tooltip: 'Kopiuj e-mail',
                     icon: const Icon(Icons.copy_rounded),
@@ -58,19 +74,13 @@ class _UserSectionMainState extends State<UserSectionMain> {
                   ),
                 ),
                 const Divider(height: 1),
-
-                // Przełącznik trybu
-                ValueListenableBuilder<ThemeMode>(
-                  valueListenable: chosenMode,
-                  builder: (context, mode, __) {
-                    final isDark = mode == ThemeMode.dark;
-                    return SwitchListTile.adaptive(
-                      secondary:
-                          Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-                      title: const Text('Tryb ciemny'),
-                      value: isDark,
-                      onChanged: (v) => chosenMode.value =
-                          v ? ThemeMode.dark : ThemeMode.light,
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('Edytuj dane użytkownika'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const EditUserScreen()),
                     );
                   },
                 ),
@@ -92,8 +102,10 @@ class _UserSectionMainState extends State<UserSectionMain> {
                   borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: () {
-              userProvider.logout();
+              // wyczyść stan aplikacji
+              context.read<UserProvider>().logout();
               UserServices().logout();
+              // jeśli trzymasz gdzieś global, warto go wyzerować w logout providera
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,

@@ -17,7 +17,9 @@ class _NavBarMainState extends State<NavBarMain> {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      backgroundColor: LivoColors.background,
+      backgroundColor: chosenMode.value == ThemeMode.light
+          ? LivoColors.background
+          : Colors.black,
       currentIndex: _mapEnumToIndex(currentSite.value),
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.grey,

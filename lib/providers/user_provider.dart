@@ -85,14 +85,15 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register({
-    required String email,
-    required String password,
-    required String nickname,
-  }) async {
+  Future<bool> register(
+      {required String email,
+      required String password,
+      required String nickname,
+      required String phone}) async {
     try {
       final userServices = UserServices();
-      final result = await userServices.registration(email, password, nickname);
+      final result =
+          await userServices.registration(email, password, nickname, phone);
       return result;
     } catch (e) {
       debugPrint('Registration error: $e');
@@ -107,5 +108,34 @@ class UserProvider with ChangeNotifier {
     await prefs.remove('loggedIn');
     await prefs.remove('userData');
     notifyListeners();
+  }
+
+  Future<void> updateProfile({
+    required String username,
+    required String email,
+    String? phone,
+  }) async {
+    final result = await UserServices.updateProfile(
+      username: username,
+      email: email,
+      phone: phone,
+      token: _token,
+      userIdForDev:
+          _user?.id, // jeśli backend ma wyłączone auth – prześle userId
+    );
+
+    // Zakładam payload: { success:true, user:{...} }
+    final updatedUserJson = result['user'] as Map<String, dynamic>?;
+
+    if (updatedUserJson != null) {
+      _user = User.fromJson(updatedUserJson);
+
+      // zapisz do SharedPreferences
+      await _prefs.setString('userData', jsonEncode(_user!.toJson()));
+      // update globala, jeśli go używasz
+      loggedUser = _user;
+
+      notifyListeners();
+    }
   }
 }

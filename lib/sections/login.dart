@@ -305,6 +305,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscure1 = true;
   bool _obscure2 = true;
@@ -314,6 +315,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _phoneCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
   }
@@ -321,10 +323,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Future<void> _handleRegister() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final success = await userProvider.register(
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
-      nickname: _usernameCtrl.text.trim(),
-    );
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
+        nickname: _usernameCtrl.text.trim(),
+        phone: _phoneCtrl.text.trim());
 
     print('czy jest success ' + success.toString());
     if (success) {
@@ -410,6 +412,33 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 final ok =
                                     RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v);
                                 return ok ? null : 'Enter a valid email';
+                              },
+                            ),
+                            _roundedField(
+                              controller: _phoneCtrl,
+                              label: 'Phone',
+                              keyboardType: TextInputType.phone,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty)
+                                  return 'Required';
+                                final compact =
+                                    v.trim().replaceAll(RegExp(r'[ \-()]'), '');
+
+                                // z prefiksem + (E.164): + i 7–15 cyfr
+                                if (compact.startsWith('+')) {
+                                  return RegExp(r'^\+\d{7,15}$')
+                                          .hasMatch(compact)
+                                      ? null
+                                      : 'Enter a valid phone';
+                                }
+
+                                // bez + : 9–15 cyfr łącznie
+                                final digits =
+                                    compact.replaceAll(RegExp(r'\D'), '');
+                                return (digits.length >= 9 &&
+                                        digits.length <= 15)
+                                    ? null
+                                    : 'Enter a valid phone';
                               },
                             ),
                             const SizedBox(height: 14),

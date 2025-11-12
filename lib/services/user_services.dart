@@ -34,12 +34,13 @@ class UserServices {
     return decodedBody;
   }
 
-  registration(String email, String password, String name) async {
+  registration(String email, String password, String name, String phone) async {
     print('UserServices: registration');
     Map<String, dynamic> body = {
       'email': email,
       'password': password,
-      'username': name
+      'username': name,
+      'phone': phone
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/user/registration'),
@@ -58,7 +59,6 @@ class UserServices {
   Future<Map<String, dynamic>> getProfile() async {
     print('UserServices: getProfile()');
 
-    // 📥 Pobierz token z SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
 
@@ -67,11 +67,10 @@ class UserServices {
     }
 
     final http.Response res = await http.get(
-      Uri.parse(
-          '$_urlPrefix/user/me'), // <-- dostosuj do swojego backendu (/auth/me lub /user/me)
+      Uri.parse('$_urlPrefix/user/me'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token', // 🔐 TOKEN JWT
+        'Authorization': 'Bearer $token',
       },
     );
 
@@ -96,7 +95,6 @@ class UserServices {
   }
 
   Future<User?> getUserById(String id) async {
-    print("pruba");
     final uri = Uri.parse('${ApiService.baseUrl}/user/getById');
     final res = await http.post(uri,
         body: jsonEncode({'id': id}),
@@ -106,5 +104,35 @@ class UserServices {
       return User.fromJson(data['user'] as Map<String, dynamic>);
     }
     return null;
+  }
+
+  static Future<Map<String, dynamic>> updateProfile(
+      {required String username,
+      required String email,
+      String? phone,
+      String? token, // z UserProvider.token
+      String? userIdForDev // na DEV, gdy nie masz auth na backendzie
+      }) async {
+    final uri = Uri.parse('${ApiService.baseUrl}/user/updateProfile');
+
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final body = jsonEncode({
+      'username': username,
+      'email': email,
+      if (phone != null) 'phone': phone,
+      if (userIdForDev != null) 'userId': userIdForDev, // DEV fallback
+    });
+
+    final res = await http.post(uri, headers: headers, body: body);
+    if (res.statusCode != 200) {
+      throw Exception('Aktualizacja profilu nie powiodła się: '
+          'HTTP ${res.statusCode} ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
   }
 }

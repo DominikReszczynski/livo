@@ -11,11 +11,15 @@ class User {
   String username;
   // String password;
 
+  /// nowość
+  String? phone;
+
   User({
     required this.id,
     required this.email,
     required this.username,
     // required this.password,
+    this.phone,
   });
 
   /// Factory constructor for JSON serialization

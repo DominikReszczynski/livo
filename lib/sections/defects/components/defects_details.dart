@@ -220,6 +220,9 @@ class _DefectDetailsState extends State<DefectDetails>
           // 🔹 Zakładki
           TabBar(
             controller: _tabController,
+            overlayColor:
+                WidgetStateProperty.all(LivoColors.brandGold.withOpacity(0.1)),
+            indicatorColor: LivoColors.brandGold,
             labelColor: Colors.black,
             tabs: const [
               Tab(text: "Szczegóły"),
@@ -365,15 +368,13 @@ class _DefectDetailsState extends State<DefectDetails>
                   ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton.icon(
+                IconButton.filled(
                   onPressed: posting ? null : () => _sendComment(defectId),
-                  icon: posting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.send),
-                  label: const Text('Wyślij'),
+                  icon: const Icon(Icons.send),
+                  style: IconButton.styleFrom(
+                    backgroundColor: LivoColors.brandGold, // tło
+                    foregroundColor: Colors.white, // kolor ikony
+                  ),
                 ),
               ],
             ),
