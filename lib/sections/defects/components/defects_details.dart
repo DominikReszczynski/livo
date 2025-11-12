@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart'; // ⬅️ NEW
 
 class DefectDetails extends StatefulWidget {
   final Defect defect;
@@ -25,14 +26,38 @@ class _DefectDetailsState extends State<DefectDetails>
   late TabController _tabController;
   static const String urlPrefix = ApiService.baseUrl;
 
+  // ======== KOMENTARZE: stan lokalny ========
+  final _commentCtrl = TextEditingController();
+  final _picker = ImagePicker();
+  final _commentsScroll = ScrollController();
+  List<File> _pendingAttachments = [];
+  bool _commentsBootstrapped = false;
+
+  void _providerListener() {
+    if (mounted) setState(() {}); // odśwież UI po notifyListeners()
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this); // ⬅️ było 2
+    // reakt. nasłuch na zmiany w providerze
+    widget.defectsProvider.addListener(_providerListener);
+    // pierwszy fetch komentarzy
+    final id = widget.defect.id;
+    if (id != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await widget.defectsProvider.fetchComments(id);
+        if (mounted) setState(() => _commentsBootstrapped = true);
+      });
+    }
   }
 
   @override
   void dispose() {
+    widget.defectsProvider.removeListener(_providerListener);
+    _commentCtrl.dispose();
+    _commentsScroll.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -56,6 +81,12 @@ class _DefectDetailsState extends State<DefectDetails>
   String _formatDate(DateTime? date) {
     if (date == null) return "-";
     return DateFormat('dd.MM.yyyy, HH:mm').format(date);
+  }
+
+  String _formatShort(DateTime? dt) {
+    if (dt == null) return '-';
+    final two = (int n) => n.toString().padLeft(2, '0');
+    return "${two(dt.hour)}:${two(dt.minute)} ${two(dt.day)}.${two(dt.month)}.${dt.year}";
   }
 
   @override
@@ -118,6 +149,7 @@ class _DefectDetailsState extends State<DefectDetails>
                 top: 48,
                 right: 16,
                 child: GestureDetector(
+                  key: const Key('defect_status_chip_tap'),
                   onTap: _showStatusPicker,
                   child: Container(
                     padding:
@@ -192,6 +224,7 @@ class _DefectDetailsState extends State<DefectDetails>
             tabs: const [
               Tab(text: "Szczegóły"),
               Tab(text: "Zdjęcia"),
+              Tab(text: "Komentarze"),
             ],
           ),
 
@@ -202,6 +235,7 @@ class _DefectDetailsState extends State<DefectDetails>
               children: [
                 _buildDetailsTab(),
                 _buildImagesTab(),
+                _buildCommentsTab(), // ⬅️ NEW
               ],
             ),
           ),
@@ -232,6 +266,155 @@ class _DefectDetailsState extends State<DefectDetails>
         ],
       ),
     );
+  }
+
+  // ======== KOMENTARZE: UI ========
+  Widget _buildCommentsTab() {
+    final defectId = widget.defect.id;
+    final provider = widget.defectsProvider;
+    if (defectId == null) {
+      return const Center(child: Text("Brak ID defektu"));
+    }
+
+    final comments = provider.commentsFor(defectId);
+    final loading = provider.isLoading(defectId);
+    final posting = provider.isPosting(defectId);
+
+    return Column(
+      children: [
+        Expanded(
+          child: (!_commentsBootstrapped || loading)
+              ? const Center(child: CircularProgressIndicator())
+              : comments.isEmpty
+                  ? const Center(child: Text("Brak komentarzy"))
+                  : ListView.separated(
+                      controller: _commentsScroll,
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                      itemCount: comments.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (_, i) => _CommentTile(
+                        c: comments[i],
+                        urlPrefix: urlPrefix,
+                        formatDate: _formatShort,
+                      ),
+                    ),
+        ),
+        if (_pendingAttachments.isNotEmpty)
+          SizedBox(
+            height: 96,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              scrollDirection: Axis.horizontal,
+              itemCount: _pendingAttachments.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) => Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      _pendingAttachments[i],
+                      width: 96,
+                      height: 96,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    right: 4,
+                    top: 4,
+                    child: InkWell(
+                      onTap: () =>
+                          setState(() => _pendingAttachments.removeAt(i)),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.close,
+                            size: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            child: Row(
+              children: [
+                IconButton(
+                  tooltip: 'Dodaj załącznik',
+                  onPressed: _pickCommentImages,
+                  icon: const Icon(Icons.attach_file),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _commentCtrl,
+                    minLines: 1,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      hintText: 'Dodaj komentarz…',
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: posting ? null : () => _sendComment(defectId),
+                  icon: posting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.send),
+                  label: const Text('Wyślij'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickCommentImages() async {
+    final imgs = await _picker.pickMultiImage();
+    setState(() {
+      _pendingAttachments = imgs.map((x) => File(x.path)).toList();
+    });
+  }
+
+  Future<void> _sendComment(String defectId) async {
+    final text = _commentCtrl.text.trim();
+    if (text.isEmpty && _pendingAttachments.isEmpty) return;
+
+    try {
+      await widget.defectsProvider.addComment(
+        defectId,
+        text.isEmpty ? '(załącznik)' : text,
+        attachments: _pendingAttachments,
+      );
+      _commentCtrl.clear();
+      setState(() => _pendingAttachments = []);
+      await Future.delayed(const Duration(milliseconds: 80));
+      if (_commentsScroll.hasClients) {
+        _commentsScroll.animateTo(
+          _commentsScroll.position.maxScrollExtent + 120,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nie udało się dodać komentarza: $e')),
+      );
+    }
   }
 
   Widget _buildImagesTab() {
@@ -350,6 +533,7 @@ class _DefectDetailsState extends State<DefectDetails>
               const Divider(height: 1),
               ...statuses.map((s) {
                 return ListTile(
+                  key: Key('status_option_${s['label']}'),
                   leading: Container(
                     width: 16,
                     height: 16,
@@ -392,6 +576,109 @@ class _DefectDetailsState extends State<DefectDetails>
           ),
         );
       },
+    );
+  }
+}
+
+// ======== kafelek komentarza ========
+class _CommentTile extends StatelessWidget {
+  final Comment c;
+  final String urlPrefix;
+  final String Function(DateTime?) formatDate;
+
+  const _CommentTile({
+    required this.c,
+    required this.urlPrefix,
+    required this.formatDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              CircleAvatar(
+                child: Text(
+                  (c.author.username.isNotEmpty ? c.author.username[0] : '?')
+                      .toUpperCase(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  c.author.username,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              Text(
+                formatDate(c.createdAt),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ]),
+            const SizedBox(height: 8),
+            if (c.message.isNotEmpty) Text(c.message),
+            if (c.attachments.isNotEmpty) const SizedBox(height: 8),
+            if (c.attachments.isNotEmpty)
+              SizedBox(
+                height: 110,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: c.attachments.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) {
+                    final raw = c.attachments[i];
+
+                    final src = raw.startsWith('http') ? raw : '$urlPrefix$raw';
+                    final imagesForViewer = c.attachments.map((a) {
+                      final path = a.startsWith('http') ? Uri.parse(a).path : a;
+                      final noSlash =
+                          path.startsWith('/') ? path.substring(1) : path;
+                      return noSlash.startsWith('uploads/')
+                          ? noSlash.substring('uploads/'.length)
+                          : noSlash;
+                    }).toList();
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullscreenImageViewer(
+                              images: imagesForViewer,
+                              initialIndex: i,
+                            ),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          src,
+                          width: 140,
+                          height: 110,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 140,
+                            height: 110,
+                            alignment: Alignment.center,
+                            color: Colors.grey.shade200,
+                            child: const Icon(Icons.broken_image),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

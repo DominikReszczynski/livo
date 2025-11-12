@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:cas_house/main_global.dart';
 import 'package:cas_house/models/properties.dart';
-import 'package:cas_house/sections/dashboard/image_picker.dart';
+import 'package:cas_house/widgets/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -350,63 +350,64 @@ class _AddNewPropertyOwnerState extends State<AddNewPropertyOwner> {
             const SizedBox(height: 12),
 
             // KARTA: Daty najmu (wymagane tylko dla "wynajęte")
-            Card(
-              color: LivoColors.brandBeige,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const _SectionTitle('Daty najmu'),
-                        const SizedBox(width: 8),
-                        if (_status == 'wolne')
-                          Text(
-                            '(opcjonalnie)',
-                            style: TextStyle(
-                                color: theme.textTheme.bodySmall?.color
-                                    ?.withOpacity(.7)),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _DatePill(
-                            label: _rentalStart == null
-                                ? 'Start najmu'
-                                : dateFmt.format(_rentalStart!),
-                            onTap: () => _pickDate(true),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _DatePill(
-                            label: _rentalEnd == null
-                                ? 'Koniec najmu'
-                                : dateFmt.format(_rentalEnd!),
-                            onTap: () => _pickDate(false),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_dateError != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(_dateError!,
-                              style: const TextStyle(color: Colors.red)),
-                        ),
+            if (_status == 'wynajęte')
+              Card(
+                color: LivoColors.brandBeige,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const _SectionTitle('Daty najmu'),
+                          const SizedBox(width: 8),
+                          if (_status == 'wolne')
+                            Text(
+                              '(opcjonalnie)',
+                              style: TextStyle(
+                                  color: theme.textTheme.bodySmall?.color
+                                      ?.withOpacity(.7)),
+                            ),
+                        ],
                       ),
-                  ],
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DatePill(
+                              label: _rentalStart == null
+                                  ? 'Start najmu'
+                                  : dateFmt.format(_rentalStart!),
+                              onTap: () => _pickDate(true),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _DatePill(
+                              label: _rentalEnd == null
+                                  ? 'Koniec najmu'
+                                  : dateFmt.format(_rentalEnd!),
+                              onTap: () => _pickDate(false),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_dateError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(_dateError!,
+                                style: const TextStyle(color: Colors.red)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
             const SizedBox(height: 12),
 

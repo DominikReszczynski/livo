@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cas_house/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart' as img_picker;
 import 'package:http/http.dart' as http;
@@ -28,21 +27,6 @@ class _SingleImageUploaderState extends State<SingleImageUploader> {
     }
   }
 
-  // Future<void> _uploadImage(File image) async {
-  //   final String _urlPrefix = ApiService.baseUrl;
-  //   final request = http.MultipartRequest(
-  //     'POST',
-  //     Uri.parse('$_urlPrefix/upload/image'),
-  //   );
-  //   request.files.add(await http.MultipartFile.fromPath('image', image.path));
-  //   final response = await request.send();
-
-  //   if (response.statusCode == 200) {
-  //     print('Upload OK');
-  //   } else {
-  //     print('Upload failed');
-  //   }
-  // }
   static const double _tileSize = 180;
   static const BorderRadius _radius = BorderRadius.all(Radius.circular(12));
   @override

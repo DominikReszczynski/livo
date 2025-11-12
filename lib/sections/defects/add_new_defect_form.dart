@@ -8,7 +8,7 @@ import 'package:cas_house/models/property_short.dart';
 import 'package:cas_house/models/properties.dart';
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
-import 'package:cas_house/sections/dashboard/multi_image_picker.dart';
+import 'package:cas_house/widgets/multi_image_picker.dart';
 
 class AddNewDefectForm extends StatefulWidget {
   final PropertiesProvider propertiesProvider;

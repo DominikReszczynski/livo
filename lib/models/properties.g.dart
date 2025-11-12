@@ -27,7 +27,9 @@ Property _$PropertyFromJson(Map<String, dynamic> json) => Property(
       imageFilenames: (json['imageFilenames'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      rentalContractFilename: json['rentalContractFilename'] as String?,
+      documents: (json['documents'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       notes: json['notes'] as String?,
       mainImage: json['mainImage'] as String?,
       pin: json['pin'] as String?,
@@ -51,8 +53,8 @@ Map<String, dynamic> _$PropertyToJson(Property instance) => <String, dynamic>{
       'paymentCycle': instance.paymentCycle,
       'rentalStart': instance.rentalStart,
       'rentalEnd': instance.rentalEnd,
+      'documents': instance.documents,
       'imageFilenames': instance.imageFilenames,
-      'rentalContractFilename': instance.rentalContractFilename,
       'notes': instance.notes,
       'mainImage': instance.mainImage,
       'pin': instance.pin,

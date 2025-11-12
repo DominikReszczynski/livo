@@ -23,6 +23,9 @@ Defect _$DefectFromJson(Map<String, dynamic> json) => Defect(
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
+      comments: (json['comments'] as List<dynamic>?)
+          ?.map((e) => Comment.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$DefectToJson(Defect instance) => <String, dynamic>{
@@ -34,4 +37,5 @@ Map<String, dynamic> _$DefectToJson(Defect instance) => <String, dynamic>{
       'imageFilenames': instance.imageFilenames,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'comments': instance.comments?.map((e) => e.toJson()).toList(),
     };

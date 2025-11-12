@@ -24,8 +24,9 @@ class Property {
   String? rentalStart;
   String? rentalEnd;
 
+  @JsonKey(name: 'documents')
+  List<String>? documents;
   List<String>? imageFilenames;
-  String? rentalContractFilename;
   String? notes;
   String? mainImage;
   String? pin;
@@ -53,7 +54,7 @@ class Property {
     this.rentalStart,
     this.rentalEnd,
     this.imageFilenames,
-    this.rentalContractFilename,
+    this.documents,
     this.notes,
     this.mainImage,
     this.pin,

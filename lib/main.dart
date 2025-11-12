@@ -26,7 +26,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => PropertiesProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider(prefs)),
-        ChangeNotifierProvider(create: (_) => DefectsProvider()),
+        ChangeNotifierProvider(
+            create: (_) => DefectsProvider(UserProvider(prefs))),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
       ],
       child: const MyApp(),
@@ -71,13 +72,10 @@ class HelloButtonState extends State<HelloButton> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
-          // Pass chosenSection and rebuild SectionMain when it changes
-          ValueListenableBuilder<MainViews>(
-        valueListenable:
-            currentSite, // Observing the global `currentSite` for changes.
+      body: ValueListenableBuilder<MainViews>(
+        valueListenable: currentSite,
         builder: (context, currentSiteValue, child) {
-          return _buildBody(); // Dynamically build the screen based on the selected view.
+          return _buildBody();
         },
       ),
       bottomNavigationBar: const NavBarMain(),

@@ -34,7 +34,7 @@ class DefectsService {
       // 2️⃣ Wysyłka defektu
       final uri = Uri.parse('${ApiService.baseUrl}/defect/addDefect');
       final body = jsonEncode({
-        'propertyId': defect.property?.id, // 🔹 tylko ID mieszkania
+        'propertyId': defect.property?.id,
         'title': defect.title,
         'description': defect.description,
         'status': defect.status,
@@ -128,6 +128,86 @@ class DefectsService {
       return list.map((e) => Defect.fromJson(e)).toList();
     } else {
       throw Exception('Błąd pobierania defektów: ${res.statusCode}');
+    }
+  }
+
+  static Map<String, String> _authHeaders(String? token,
+      {Map<String, String>? extra}) {
+    final h = <String, String>{'Accept': 'application/json'};
+    if (token != null && token.isNotEmpty) {
+      h['Authorization'] = 'Bearer $token';
+    }
+    if (extra != null) h.addAll(extra);
+    return h;
+  }
+
+  /// 💬 Pobierz komentarze dla defektu (z prostą paginacją)
+  static Future<List<Comment>> fetchComments(
+    String defectId, {
+    required String? token,
+    int skip = 0,
+    int limit = 50,
+  }) async {
+    final uri = Uri.parse(
+        '$_urlPrefix/defects/$defectId/comments?skip=$skip&limit=$limit');
+
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception(
+          'Błąd pobierania komentarzy: HTTP ${res.statusCode} ${res.body}');
+    }
+    final data = json.decode(res.body) as Map<String, dynamic>;
+    final items = (data['items'] as List).cast<Map<String, dynamic>>();
+    return items.map((e) => Comment.fromJson(e)).toList();
+  }
+
+  static Future<Comment> addComment(
+    String defectId,
+    String message, {
+    required String? token,
+    List<File> attachments = const [],
+  }) async {
+    final url = Uri.parse('${ApiService.baseUrl}/defects/$defectId/comments');
+
+    final uid = loggedUser?.id;
+
+    if (attachments.isEmpty) {
+      // ----- JSON -----
+      final res = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'message': message,
+          if (uid != null) 'userId': uid,
+        }),
+      );
+
+      if (res.statusCode != 201) {
+        throw Exception(
+            'Błąd dodawania komentarza: HTTP ${res.statusCode} ${res.body}');
+      }
+      final map = json.decode(res.body) as Map<String, dynamic>;
+      final payload = (map['comment'] ?? map) as Map<String, dynamic>;
+      return Comment.fromJson(payload);
+    } else {
+      // ----- MULTIPART -----
+      final m = http.MultipartRequest('POST', url);
+      m.fields['message'] = message;
+      if (uid != null) m.fields['userId'] = uid;
+
+      for (final f in attachments) {
+        m.files.add(await http.MultipartFile.fromPath('attachments', f.path));
+      }
+
+      final streamed = await m.send();
+      final bodyStr = await streamed.stream.bytesToString();
+      if (streamed.statusCode != 201) {
+        throw Exception(
+            'Błąd dodawania komentarza: HTTP ${streamed.statusCode} $bodyStr');
+      }
+      final map = json.decode(bodyStr) as Map<String, dynamic>;
+      final payload = (map['comment'] ?? map) as Map<String, dynamic>;
+      return Comment.fromJson(payload);
     }
   }
 }

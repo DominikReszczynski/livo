@@ -1,5 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cas_house/main_global.dart'; // loggedUser
+import 'package:cas_house/main_global.dart';
 import 'package:cas_house/providers/defects_provider.dart';
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/widgets/animated_background.dart';
@@ -15,28 +15,43 @@ class HomeSectionMain extends StatefulWidget {
 class _HomeSectionMainState extends State<HomeSectionMain>
     with SingleTickerProviderStateMixin {
   @override
+  void initState() {
+    super.initState();
+    // Bezpiecznie po pierwszym framie:
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = loggedUser?.id;
+      final defects = context.read<DefectsProvider>();
+      final properties = context.read<PropertiesProvider>();
+      if (userId != null) {
+        defects.fetchDefects();
+        properties.getAllPropertiesByOwner();
+        properties.getAllPropertiesByTenant();
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // (opcjonalnie) jeśli w trakcie życia ekranu zaloguje się user:
+    final userId = loggedUser?.id;
+    if (userId != null) {
+      Future.microtask(
+          () => context.read<DefectsProvider>().fetchForUser(userId));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final username = loggedUser?.username ?? 'User';
 
-    // Bezpieczne pobranie providerów (jak nie ma – pokaże 0)
-    PropertiesProvider propertiesProvider =
-        Provider.of<PropertiesProvider>(context, listen: false);
-    DefectsProvider defectsProvider =
-        Provider.of<DefectsProvider>(context, listen: false);
+    // ⬇️ Nasłuchuj zmian:
+    final defectsProvider = context.watch<DefectsProvider>();
+    final propertiesProvider = context.watch<PropertiesProvider>();
+
     final premisesCount = propertiesProvider.propertiesListOwner.length;
     final rentalsCount = propertiesProvider.propertiesListTenant.length;
-
-    @override
-    void didChangeDependencies() {
-      super.didChangeDependencies();
-      final userId = loggedUser?.id;
-      if (userId != null) {
-        // jednorazowo
-        Future.microtask(
-            () => context.read<DefectsProvider>().fetchForUser(userId));
-      }
-    }
 
     return AnimatedBackground(
       child: SafeArea(
@@ -113,10 +128,10 @@ class _HomeSectionMainState extends State<HomeSectionMain>
                             _DefectChip(
                                 item: _DefectItem(
                                     title: d.title,
-                                    daysLeft: d.updatedAt!
-                                            .difference(DateTime.now())
-                                            .inDays *
-                                        -1,
+                                    daysLeft: DateTime.now()
+                                        .difference(
+                                            (d.updatedAt ?? d.createdAt)!)
+                                        .inDays,
                                     status: d.status)),
                             const SizedBox(height: 10),
                           ]
