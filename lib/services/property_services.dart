@@ -41,6 +41,53 @@ class PropertyServices {
     return null;
   }
 
+  Future<Property?> updateProperty(Property property, File? newImage) async {
+    try {
+      final uri = Uri.parse('$_urlPrefix/property/update');
+      final request = http.MultipartRequest('POST', uri);
+
+      // Dodaj dane nieruchomości jako JSON
+      request.fields['property'] = jsonEncode(property.toJson());
+
+      // Dodaj plik, jeśli jest nowy
+      if (newImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('image', newImage.path),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['property'] != null) {
+          return Property.fromJson(data['property']);
+        }
+      }
+
+      return null; // jeśli coś poszło nie tak
+    } catch (e) {
+      print('❌ Błąd podczas aktualizacji nieruchomości: $e');
+      return null;
+    }
+  }
+
+  Future<bool> deleteProperty(String propertyId) async {
+    final uri = Uri.parse('$baseUrl/property/delete');
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'propertyId': propertyId}),
+    );
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      return data['success'] == true;
+    }
+    return false;
+  }
+
   Future<List<Property?>?> getAllPropertiesByOwner() async {
     // final prefs = await SharedPreferences.getInstance();
     // final storedUserId = prefs.getString('userId');

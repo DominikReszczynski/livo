@@ -58,6 +58,55 @@ class PropertiesProvider extends ChangeNotifier {
     return false;
   }
 
+  Future<bool> updateProperty(Property property, File? newImage) async {
+    try {
+      final updatedProperty =
+          await PropertyServices().updateProperty(property, newImage);
+
+      if (updatedProperty == null) return false;
+
+      // 🔹 Zaktualizuj dane w lokalnych listach
+      bool updated = false;
+
+      void _updateIn(List<Property?> list) {
+        for (int i = 0; i < list.length; i++) {
+          if (list[i]?.id == updatedProperty.id) {
+            list[i] = updatedProperty;
+            updated = true;
+            break;
+          }
+        }
+      }
+
+      _updateIn(_propertiesListOwner);
+      _updateIn(_propertiesListTenant);
+
+      if (updated) {
+        notifyListeners();
+      }
+
+      return true;
+    } catch (e) {
+      print('❌ Błąd podczas aktualizacji nieruchomości: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteProperty(String propertyId) async {
+    try {
+      final result = await PropertyServices().deleteProperty(propertyId);
+      if (result) {
+        _propertiesListOwner.removeWhere((p) => p?.id == propertyId);
+        _propertiesListTenant.removeWhere((p) => p?.id == propertyId);
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print("❌ Error deleting property: $e");
+    }
+    return false;
+  }
+
   Future addTenantToProperty(String propertyID, String pin) async {
     try {
       final prefs = await SharedPreferences.getInstance();

@@ -86,8 +86,10 @@ class _ExpensesSectionMainState extends State<ExpensesSectionMain> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            AddNewProperty(propertiesProvider: provider),
+                        builder: (_) => AddNewProperty(
+                          propertiesProvider: provider,
+                          result: showRentals,
+                        ),
                       ),
                     ),
                   ),
