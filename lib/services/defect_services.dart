@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:cas_house/api_service.dart';
 import 'package:cas_house/main_global.dart';
 import 'package:cas_house/models/defect.dart';
+import 'package:cas_house/services/user_services.dart';
 import 'package:http/http.dart' as http;
 
 class DefectsService {
   static const String _urlPrefix = ApiService.baseUrl;
+  final header = UserServices().getAuthHeaders();
 
   /// Dodaj nowy defekt — wraz z uploadem zdjęć
   static Future<Defect> addDefect(Defect defect, List<File> images) async {
@@ -16,6 +18,8 @@ class DefectsService {
       if (images.isNotEmpty) {
         var uploadUrl = Uri.parse('${ApiService.baseUrl}/upload/images');
         var uploadRequest = http.MultipartRequest('POST', uploadUrl);
+        final headers = await UserServices().getAuthHeaders();
+        uploadRequest.headers.addAll(headers);
         for (var image in images) {
           uploadRequest.files
               .add(await http.MultipartFile.fromPath('images', image.path));
@@ -62,10 +66,10 @@ class DefectsService {
   static Future<List<Defect>> getAllDefects() async {
     try {
       final body = {'userID': loggedUser!.id};
-
+      final headers = await UserServices().getAuthHeaders();
       final res = await http.post(
         Uri.parse('$_urlPrefix/defect/getAllDefects'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        headers: headers,
         body: jsonEncode(body),
       );
 
@@ -96,10 +100,11 @@ class DefectsService {
         'defectId': defectId,
         'status': status,
       });
+      final headers = await UserServices().getAuthHeaders();
 
       final response = await http.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: body,
       );
 
@@ -121,7 +126,8 @@ class DefectsService {
 
   Future<List<Defect>> getDefectsByUser(String userId) async {
     final uri = Uri.parse('${ApiService.baseUrl}/defects/byUser/$userId');
-    final res = await http.get(uri);
+
+    final res = await http.get(uri, headers: await header);
     if (res.statusCode == 200) {
       final data = json.decode(res.body) as Map<String, dynamic>;
       final list = (data['defects'] as List).cast<Map<String, dynamic>>();
@@ -129,16 +135,6 @@ class DefectsService {
     } else {
       throw Exception('Błąd pobierania defektów: ${res.statusCode}');
     }
-  }
-
-  static Map<String, String> _authHeaders(String? token,
-      {Map<String, String>? extra}) {
-    final h = <String, String>{'Accept': 'application/json'};
-    if (token != null && token.isNotEmpty) {
-      h['Authorization'] = 'Bearer $token';
-    }
-    if (extra != null) h.addAll(extra);
-    return h;
   }
 
   /// 💬 Pobierz komentarze dla defektu (z prostą paginacją)
@@ -151,7 +147,8 @@ class DefectsService {
     final uri = Uri.parse(
         '$_urlPrefix/defects/$defectId/comments?skip=$skip&limit=$limit');
 
-    final res = await http.get(uri);
+    final headers = await UserServices().getAuthHeaders();
+    final res = await http.get(uri, headers: headers);
     if (res.statusCode != 200) {
       throw Exception(
           'Błąd pobierania komentarzy: HTTP ${res.statusCode} ${res.body}');
@@ -170,12 +167,12 @@ class DefectsService {
     final url = Uri.parse('${ApiService.baseUrl}/defects/$defectId/comments');
 
     final uid = loggedUser?.id;
-
+    final headers = await UserServices().getAuthHeaders();
     if (attachments.isEmpty) {
       // ----- JSON -----
       final res = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode({
           'message': message,
           if (uid != null) 'userId': uid,

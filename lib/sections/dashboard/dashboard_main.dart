@@ -17,11 +17,12 @@ class _HomeSectionMainState extends State<HomeSectionMain>
   @override
   void initState() {
     super.initState();
+    final defects = context.read<DefectsProvider>();
+    final properties = context.read<PropertiesProvider>();
     // Bezpiecznie po pierwszym framie:
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = loggedUser?.id;
-      final defects = context.read<DefectsProvider>();
-      final properties = context.read<PropertiesProvider>();
+
       if (userId != null) {
         defects.fetchDefects();
         properties.getAllPropertiesByOwner();

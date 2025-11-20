@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:cas_house/services/user_services.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
 class FileApiService {
   final Dio _dio;
+  final headers = UserServices().getAuthHeaders();
 
   /// baseUrl np. 'http://10.0.2.2:3000' (Android emulator) albo 'http://localhost:3000'
   FileApiService({required String baseUrl})
@@ -36,10 +38,7 @@ class FileApiService {
       '/upload/documents',
       data: formData,
       options: Options(
-        headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
+        headers: await headers,
         contentType: 'multipart/form-data',
       ),
       onSendProgress: onProgress,

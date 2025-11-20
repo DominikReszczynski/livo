@@ -21,8 +21,8 @@ class UserProvider with ChangeNotifier {
   User? get user => _user;
 
   UserProvider(this._prefs) {
-    _loggedIn = _prefs.getBool('loggedIn') ?? false;
     _token = _prefs.getString('accessToken');
+    _loggedIn = _token != null;
     final userData = _prefs.getString('userData');
 
     print("AccessToken on startup: $_token");
@@ -89,11 +89,13 @@ class UserProvider with ChangeNotifier {
       {required String email,
       required String password,
       required String nickname,
+      required String firstname,
+      required String secondname,
       required String phone}) async {
     try {
       final userServices = UserServices();
-      final result =
-          await userServices.registration(email, password, nickname, phone);
+      final result = await userServices.registration(
+          email, password, nickname, phone, firstname, secondname);
       return result;
     } catch (e) {
       debugPrint('Registration error: $e');
@@ -114,11 +116,16 @@ class UserProvider with ChangeNotifier {
     required String username,
     required String email,
     String? phone,
+    String? firstname,
+    String? secondname,
   }) async {
-    final result = await UserServices.updateProfile(
+    final userService = UserServices();
+    final result = await userService.updateProfile(
       username: username,
       email: email,
       phone: phone,
+      firstname: firstname,
+      secondname: secondname,
       token: _token,
       userIdForDev:
           _user?.id, // jeśli backend ma wyłączone auth – prześle userId

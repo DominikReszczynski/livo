@@ -8,17 +8,17 @@ class User {
   @JsonKey(name: '_id')
   String id;
   String email;
+  String firstname;
+  String secondname;
   String username;
-  // String password;
-
-  /// nowość
   String? phone;
 
   User({
     required this.id,
+    required this.firstname,
+    required this.secondname,
     required this.email,
     required this.username,
-    // required this.password,
     this.phone,
   });
 
@@ -33,6 +33,8 @@ class User {
     return User(
       id: map['_id'],
       email: map['email'] ?? '',
+      firstname: map['firstname'] ?? '',
+      secondname: map['secondname'] ?? '',
       username: map['username'] ?? '',
       // password: map['password'] ?? '',
     );

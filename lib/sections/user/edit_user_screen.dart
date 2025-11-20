@@ -1,4 +1,3 @@
-// lib/sections/user/edit_user_screen.dart
 import 'package:cas_house/main_global.dart';
 import 'package:cas_house/sections/user/user_section_header.dart';
 import 'package:cas_house/widgets/rounded_text_field.dart';
@@ -16,6 +15,8 @@ class EditUserScreen extends StatefulWidget {
 
 class _EditUserScreenState extends State<EditUserScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _firstnameCtrl;
+  late final TextEditingController _secondnameCtrl;
   late final TextEditingController _usernameCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _phoneCtrl;
@@ -29,6 +30,8 @@ class _EditUserScreenState extends State<EditUserScreen> {
   void initState() {
     super.initState();
     final u = context.read<UserProvider>().user;
+    _firstnameCtrl = TextEditingController(text: u?.firstname ?? '');
+    _secondnameCtrl = TextEditingController(text: u?.secondname ?? '');
     _usernameCtrl = TextEditingController(text: u?.username ?? '');
     _emailCtrl = TextEditingController(text: u?.email ?? '');
     _phoneCtrl = TextEditingController(text: u?.phone ?? '');
@@ -36,6 +39,8 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
   @override
   void dispose() {
+    _firstnameCtrl.dispose();
+    _secondnameCtrl.dispose();
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
@@ -56,23 +61,16 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
   String? _validatePhone(String? v) {
     if (v == null || v.trim().isEmpty) return 'Telefon jest wymagany';
-
-    final raw = v.trim();
-    // Wywal spacje, myślniki i nawiasy do walidacji
-    final compact = raw.replaceAll(RegExp(r'[ \-()]'), '');
-
-    // Jeśli jest prefiks "+", wymagaj E.164: + i 7–15 cyfr
+    final compact = v.replaceAll(RegExp(r'[ \-()]'), '');
     if (compact.startsWith('+')) {
       if (!RegExp(r'^\+\d{7,15}$').hasMatch(compact)) {
         return 'Nieprawidłowy numer (np. +48123456789)';
       }
-      return null;
-    }
-
-    // Bez "+": policz same cyfry (9–15)
-    final digitsOnly = compact.replaceAll(RegExp(r'\D'), '');
-    if (digitsOnly.length < 9 || digitsOnly.length > 15) {
-      return 'Nieprawidłowy numer (9–15 cyfr)';
+    } else {
+      final digits = compact.replaceAll(RegExp(r'\D'), '');
+      if (digits.length < 9 || digits.length > 15) {
+        return 'Nieprawidłowy numer (9–15 cyfr)';
+      }
     }
     return null;
   }
@@ -83,6 +81,8 @@ class _EditUserScreenState extends State<EditUserScreen> {
     setState(() => _saving = true);
     try {
       await context.read<UserProvider>().updateProfile(
+            firstname: _firstnameCtrl.text.trim(),
+            secondname: _secondnameCtrl.text.trim(),
             username: _usernameCtrl.text.trim(),
             email: _emailCtrl.text.trim(),
             phone:
@@ -106,8 +106,6 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Edycja profilu')),
       body: SafeArea(
@@ -122,44 +120,57 @@ class _EditUserScreenState extends State<EditUserScreen> {
                   email: _emailCtrl.text,
                 ),
                 Card(
-                    color: LivoColors.brandBeige,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            PillField(
-                              controller: _usernameCtrl,
-                              hintText: 'Nazwa użytkownika',
-                              validator: (v) => _validateNotEmpty(
-                                  v, 'Wymagana nazwa użytkownika'),
-                              prefixIcon: const Icon(
-                                Icons.person_outline,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            PillField(
-                              controller: _emailCtrl,
-                              hintText: 'Email',
-                              validator: _validateEmail,
-                              prefixIcon: const Icon(
-                                Icons.alternate_email,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            PillField(
-                              controller: _phoneCtrl,
-                              hintText: 'Telefon',
-                              validator: _validatePhone,
-                              keyboardType: TextInputType.phone,
-                              prefixIcon: const Icon(
-                                Icons.phone_outlined,
-                              ),
-                            ),
-                          ],
-                        ))),
+                  color: LivoColors.brandBeige,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _PillField(
+                          controller: _firstnameCtrl,
+                          hintText: 'Imię',
+                          validator: (v) =>
+                              _validateNotEmpty(v, 'Imię jest wymagane'),
+                          prefixIcon: const Icon(Icons.badge_outlined),
+                        ),
+                        const SizedBox(height: 12),
+                        _PillField(
+                          controller: _secondnameCtrl,
+                          hintText: 'Nazwisko',
+                          validator: (v) =>
+                              _validateNotEmpty(v, 'Nazwisko jest wymagane'),
+                          prefixIcon: const Icon(Icons.badge),
+                        ),
+                        const SizedBox(height: 12),
+                        _PillField(
+                          controller: _usernameCtrl,
+                          hintText: 'Nazwa użytkownika',
+                          validator: (v) => _validateNotEmpty(
+                              v, 'Wymagana nazwa użytkownika'),
+                          prefixIcon: const Icon(Icons.person_outline),
+                        ),
+                        const SizedBox(height: 12),
+                        _PillField(
+                            controller: _emailCtrl,
+                            hintText: 'Email',
+                            validator: _validateEmail,
+                            prefixIcon: const Icon(Icons.alternate_email),
+                            isEditable: false),
+                        const SizedBox(height: 12),
+                        _PillField(
+                          controller: _phoneCtrl,
+                          hintText: 'Telefon',
+                          validator: _validatePhone,
+                          keyboardType: TextInputType.phone,
+                          prefixIcon: const Icon(Icons.phone_outlined),
+                          inputFormatters: [_phoneFormatter],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 SizedBox(
                   height: 56,
@@ -193,7 +204,7 @@ class _PillField extends StatelessWidget {
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
-  final int maxLines;
+  final bool isEditable;
 
   const _PillField({
     required this.controller,
@@ -202,38 +213,29 @@ class _PillField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
     this.prefixIcon,
-    this.maxLines = 1,
+    this.isEditable = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return TextFormField(
       controller: controller,
       validator: validator,
       keyboardType: keyboardType,
+      enabled: isEditable,
       inputFormatters: inputFormatters,
-      maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: prefixIcon,
         filled: true,
-        fillColor: theme.colorScheme.surface,
-        isDense: true,
+        fillColor: isEditable
+            ? Colors.white
+            : const Color.fromARGB(255, 229, 229, 229),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(24),
           borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide(
-              color: theme.colorScheme.primary.withOpacity(.35), width: 1.2),
         ),
       ),
     );

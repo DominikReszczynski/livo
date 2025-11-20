@@ -131,57 +131,57 @@ class _DefectDetailsState extends State<DefectDetails>
               ),
 
               // 🔹 Otwórz mapę
-              if (defect.property?.location != null)
-                Positioned(
-                  top: 40,
-                  right: 80,
-                  child: IconButton(
-                    onPressed: () =>
-                        _openMapWithAddress(defect.property!.location),
-                    icon: const CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.map, color: Colors.black)),
-                  ),
-                ),
-
-              // 🔹 Status defektu – klikany z wyborem
               Positioned(
-                top: 48,
-                right: 16,
-                child: GestureDetector(
-                  key: const Key('defect_status_chip_tap'),
-                  onTap: _showStatusPicker,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+                top: 40,
+                right: 10,
+                child: Row(
+                  children: [
+                    if (defect.property?.location != null)
+                      IconButton(
+                        onPressed: () =>
+                            _openMapWithAddress(defect.property!.location),
+                        icon: const CircleAvatar(
+                            backgroundColor: Colors.white,
+                            child: Icon(Icons.map, color: Colors.black)),
+                      ),
+
+                    // 🔹 Status defektu – klikany z wyborem
+                    GestureDetector(
+                      key: const Key('defect_status_chip_tap'),
+                      onTap: _showStatusPicker,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 23,
-                          height: 23,
-                          decoration: BoxDecoration(
-                            color: statusColor(widget.defect.status),
-                            shape: BoxShape.circle,
-                          ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 23,
+                              height: 23,
+                              decoration: BoxDecoration(
+                                color: statusColor(widget.defect.status),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const Icon(Icons.arrow_drop_down,
+                                size: 25, color: Colors.black54),
+                          ],
                         ),
-                        const Icon(Icons.arrow_drop_down,
-                            size: 25, color: Colors.black54),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ),
+              )
             ],
           ),
 

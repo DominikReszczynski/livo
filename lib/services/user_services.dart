@@ -34,13 +34,16 @@ class UserServices {
     return decodedBody;
   }
 
-  registration(String email, String password, String name, String phone) async {
+  registration(String email, String password, String name, String phone,
+      String firstname, String secondname) async {
     print('UserServices: registration');
     Map<String, dynamic> body = {
       'email': email,
       'password': password,
       'username': name,
-      'phone': phone
+      'phone': phone,
+      'firstname': firstname,
+      'secondname': secondname
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/user/registration'),
@@ -101,34 +104,35 @@ class UserServices {
         headers: {'Content-Type': 'application/json; charset=UTF-8'});
     if (res.statusCode == 200) {
       final data = json.decode(res.body);
+      print(data);
       return User.fromJson(data['user'] as Map<String, dynamic>);
     }
     return null;
   }
 
-  static Future<Map<String, dynamic>> updateProfile(
+  Future<Map<String, dynamic>> updateProfile(
       {required String username,
       required String email,
       String? phone,
+      String? firstname,
+      String? secondname,
       String? token, // z UserProvider.token
       String? userIdForDev // na DEV, gdy nie masz auth na backendzie
       }) async {
     final uri = Uri.parse('${ApiService.baseUrl}/user/updateProfile');
 
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-    };
+    final headers = getAuthHeaders();
 
     final body = jsonEncode({
       'username': username,
       'email': email,
+      'firstname': firstname,
+      'secondname': secondname,
       if (phone != null) 'phone': phone,
       if (userIdForDev != null) 'userId': userIdForDev, // DEV fallback
     });
 
-    final res = await http.post(uri, headers: headers, body: body);
+    final res = await http.post(uri, headers: await headers, body: body);
     if (res.statusCode != 200) {
       throw Exception('Aktualizacja profilu nie powiodła się: '
           'HTTP ${res.statusCode} ${res.body}');

@@ -142,12 +142,13 @@ void main() {
   testWidgets(
       'happy path: status "wolne" + zdjęcie -> wywołuje addProperty, snackbar i pop',
       (tester) async {
-    // zalogowany user (dopasuj konstruktor do swojego modelu)
+    // zalogowany user
     globals.loggedUser = app_user.User(
-      id: 'u-123',
-      email: 't@t.com',
-      username: 'Tester',
-    );
+        id: 'u-123',
+        email: 't@t.com',
+        username: 'Tester',
+        firstname: "Firstname",
+        secondname: "Secondname");
 
     final mock = _MockPropertiesProvider();
     final navObs = _MockNavigatorObserver();

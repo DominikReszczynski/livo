@@ -47,7 +47,9 @@ class PersonHeader extends StatelessWidget {
 
         // Nazwa / username duży i gruby
         Text(
-          user.username.isNotEmpty ? user.username : user.email,
+          user.username.isNotEmpty
+              ? "${user.firstname} ${user.secondname}"
+              : user.email,
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 26,

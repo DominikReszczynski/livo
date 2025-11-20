@@ -307,6 +307,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+  final _firstnameCtrl = TextEditingController();
+  final _secondnameCtrl = TextEditingController();
   bool _obscure1 = true;
   bool _obscure2 = true;
 
@@ -317,16 +319,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _passwordCtrl.dispose();
     _phoneCtrl.dispose();
     _confirmCtrl.dispose();
+    _firstnameCtrl.dispose();
+    _secondnameCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final success = await userProvider.register(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text,
-        nickname: _usernameCtrl.text.trim(),
-        phone: _phoneCtrl.text.trim());
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text,
+      firstname: _firstnameCtrl.text.trim(),
+      secondname: _secondnameCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim(),
+      nickname: _usernameCtrl.text.trim(),
+    );
 
     print('czy jest success ' + success.toString());
     if (success) {
@@ -398,6 +405,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             _roundedField(
                               controller: _usernameCtrl,
                               label: 'Username',
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Required'
+                                  : null,
+                            ),
+                            const SizedBox(height: 14),
+                            _roundedField(
+                              controller: _firstnameCtrl,
+                              label: 'First name',
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Required'
+                                  : null,
+                            ),
+                            const SizedBox(height: 14),
+                            _roundedField(
+                              controller: _secondnameCtrl,
+                              label: 'Second name',
                               validator: (v) => (v == null || v.trim().isEmpty)
                                   ? 'Required'
                                   : null,

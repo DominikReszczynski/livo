@@ -24,6 +24,8 @@ class _UserSectionMainState extends State<UserSectionMain> {
       final email = user?.email ?? '';
       final username = user?.username ?? '';
       final phone = user?.phone ?? '';
+      final firstname = user?.firstname ?? '';
+      final secondname = user?.secondname ?? '';
 
       return ListView(
         padding: const EdgeInsets.all(16),
@@ -32,7 +34,7 @@ class _UserSectionMainState extends State<UserSectionMain> {
 
           // Header dostaje dane Z PROVIDERA (nie z globala)
           UserSectionHeader(
-            username: username,
+            username: "$firstname $secondname",
             email: email,
             phone: phone,
           ),
@@ -49,7 +51,7 @@ class _UserSectionMainState extends State<UserSectionMain> {
                 ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: Text(
-                    username.isNotEmpty ? username : email,
+                    username.isNotEmpty ? "$firstname $secondname" : email,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   subtitle: Text(

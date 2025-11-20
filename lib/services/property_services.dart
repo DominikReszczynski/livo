@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 class PropertyServices {
   final String _urlPrefix = ApiService.baseUrl;
+  final header = UserServices().getAuthHeaders();
 
   Future<Property?> addProperty(Property property, File? imageFile) async {
     final uri = Uri.parse('$_urlPrefix/property/addProperty');
@@ -46,6 +47,8 @@ class PropertyServices {
       final uri = Uri.parse('$_urlPrefix/property/update');
       final request = http.MultipartRequest('POST', uri);
 
+      final headers = await UserServices().getAuthHeaders();
+      request.headers.addAll(headers);
       // Dodaj dane nieruchomości jako JSON
       request.fields['property'] = jsonEncode(property.toJson());
 
@@ -77,7 +80,7 @@ class PropertyServices {
     final uri = Uri.parse('$baseUrl/property/delete');
     final res = await http.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: await header,
       body: jsonEncode({'propertyId': propertyId}),
     );
 
@@ -89,18 +92,13 @@ class PropertyServices {
   }
 
   Future<List<Property?>?> getAllPropertiesByOwner() async {
-    // final prefs = await SharedPreferences.getInstance();
-    // final storedUserId = prefs.getString('userId');
-
     print(loggedUser!.id);
     Map<String, dynamic> body = {
       'userID': loggedUser!.id,
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/property/getAllByOwner'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: await header,
       body: jsonEncode(body),
     );
     print(res.body);
@@ -124,9 +122,7 @@ class PropertyServices {
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/property/getAllByTenant'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: await header,
       body: jsonEncode(body),
     );
     print(res.body);
@@ -149,9 +145,7 @@ class PropertyServices {
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/property/setPin'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: await header,
       body: jsonEncode(body),
     );
     print(res.body);
@@ -169,9 +163,7 @@ class PropertyServices {
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/property/removePin'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: await header,
       body: jsonEncode(body),
     );
     print(res.body);
@@ -182,18 +174,18 @@ class PropertyServices {
     return false;
   }
 
-  Future addTenantToProperty(
-      String propertyID, String pin, String tenantID) async {
+  Future addTenantToProperty(String propertyID, String pin, String tenantID,
+      DateTime rentalStart, DateTime rentalEnd) async {
     Map<String, dynamic> body = {
       'propertyID': propertyID,
       'pin': pin,
       'tenantID': tenantID,
+      'rentalStart': rentalStart,
+      'rentalEnd': rentalEnd
     };
     final http.Response res = await http.post(
       Uri.parse('$_urlPrefix/property/addTenantToProperty'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: await header,
       body: jsonEncode(body),
     );
     print(res.body);
@@ -238,7 +230,7 @@ class PropertyServices {
     final uri = Uri.parse('${ApiService.baseUrl}/property/addRentalImages');
     final response = await http.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: await header,
       body: jsonEncode({
         'propertyId': propertyId, // u Ciebie ID to String
         'imageFilenames': uploadedFilenames,

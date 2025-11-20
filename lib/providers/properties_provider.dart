@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:cas_house/models/properties.dart';
 import 'package:cas_house/services/property_services.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PropertiesProvider extends ChangeNotifier {
@@ -34,6 +36,7 @@ class PropertiesProvider extends ChangeNotifier {
       if (result != null) {
         _propertiesListTenant = result;
         notifyListeners();
+
         return result;
       }
     } catch (e) {
@@ -107,12 +110,13 @@ class PropertiesProvider extends ChangeNotifier {
     return false;
   }
 
-  Future addTenantToProperty(String propertyID, String pin) async {
+  Future addTenantToProperty(String propertyID, String pin,
+      DateTime rentalStart, DateTime rentalEnd) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final storedUserId = prefs.getString('userId');
-      final Property? result = await PropertyServices()
-          .addTenantToProperty(propertyID, pin, storedUserId!);
+      final Property? result = await PropertyServices().addTenantToProperty(
+          propertyID, pin, storedUserId!, rentalStart, rentalEnd);
       if (result != null) {
         _propertiesListTenant.insert(0, result);
         notifyListeners();

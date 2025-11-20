@@ -6,7 +6,6 @@ import 'package:cas_house/models/properties.dart';
 import 'package:cas_house/models/user.dart';
 import 'package:cas_house/providers/properties_provider.dart';
 import 'package:cas_house/sections/properties/add_new_property.dart';
-import 'package:cas_house/sections/properties/add_new_property_owner.dart';
 import 'package:cas_house/sections/properties/add_tenant.dart';
 import 'package:cas_house/sections/properties/property_detile_tabs/landlord_info.dart';
 import 'package:cas_house/sections/properties/property_detile_tabs/rental_info.dart';
@@ -38,9 +37,8 @@ class _PropertyDetailsState extends State<PropertyDetails>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     final bool iAmOwner = loggedUser?.id == widget.property.ownerId;
-    final String? otherUserId = iAmOwner
-        ? widget.property.tenantId // może być null gdy niewynajęte
-        : widget.property.ownerId;
+    final String? otherUserId =
+        iAmOwner ? widget.property.tenantId : widget.property.ownerId;
 
     if (otherUserId != null && otherUserId.isNotEmpty) {
       _otherUserFuture = UserServices().getUserById(otherUserId);
@@ -101,7 +99,7 @@ class _PropertyDetailsState extends State<PropertyDetails>
               ),
               Positioned(
                 top: 40,
-                right: 16,
+                right: 0,
                 child: Row(
                   children: [
                     IconButton(
@@ -111,54 +109,22 @@ class _PropertyDetailsState extends State<PropertyDetails>
                           backgroundColor: Colors.white,
                           child: Icon(Icons.map, color: Colors.black)),
                     ),
-                    widget.property.status == "wynajęte"
-                        ? IconButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text(
-                                        "Contact ${widget.property.ownerId != loggedUser!.id ? "Owner" : "Tenant"}"),
-                                    content: const Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                            "Would you like to contact the owner of this property?"),
-                                      ],
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text("Ok"),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            icon: const CircleAvatar(
-                                backgroundColor: Colors.white,
-                                child: Icon(Icons.person, color: Colors.black)),
-                          )
-                        : IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddTenant(
-                                      propertyID: widget.property.id!,
-                                      propertyPin: widget.property.pin),
-                                ),
-                              );
-                            },
-                            icon: const CircleAvatar(
-                                backgroundColor: Colors.white,
-                                child: Icon(Icons.person_add,
-                                    color: Colors.black)),
-                          ),
+                    if (loggedUser!.id == widget.property.ownerId)
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddTenant(
+                                  propertyID: widget.property.id!,
+                                  propertyPin: widget.property.pin),
+                            ),
+                          );
+                        },
+                        icon: const CircleAvatar(
+                            backgroundColor: Colors.white,
+                            child: Icon(Icons.person_add, color: Colors.black)),
+                      ),
                     if (loggedUser!.id == widget.property.ownerId)
                       IconButton(
                         onPressed: () => _showPropertyActions(context),
@@ -173,9 +139,14 @@ class _PropertyDetailsState extends State<PropertyDetails>
           ),
           const SizedBox(height: 12),
           Center(
-            child: Text(widget.property.name,
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            child: Column(
+              children: [
+                Text(widget.property.name,
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(widget.property.location)
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           TabBar(
@@ -191,7 +162,6 @@ class _PropertyDetailsState extends State<PropertyDetails>
                   text: loggedUser?.id == widget.property.ownerId
                       ? "Tenant"
                       : "Landlord"),
-              // if (widget.property.status == "wynajęte") Tab(text: "Najemca"),
             ],
           ),
           Expanded(
@@ -342,13 +312,6 @@ class _PropertyDetailsState extends State<PropertyDetails>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Text(widget.property.name,
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(height: 12),
-          _buildDetailItem("Lokalizacja", widget.property.location),
           _buildDetailItem("Powierzchnia", "${widget.property.size} m²"),
           _buildDetailItem("Pokoje", "${widget.property.rooms}"),
           _buildDetailItem("Piętro", "${widget.property.floor}"),
